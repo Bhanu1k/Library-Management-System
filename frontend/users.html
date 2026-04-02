@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Management — Library Management System</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/members.css" />
+    <style>
+        .role-badge {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        .role-ADMIN {
+            background: #fdf0e8;
+            color: #854f0b;
+        }
+
+        .role-LIBRARIAN {
+            background: #e8f4fd;
+            color: #1565a0;
+        }
+
+        .role-MEMBER {
+            background: #eaf8f0;
+            color: #1b6b3a;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--border-color, #e8ecf0);
+            background: var(--bg-secondary, #f5f7fa);
+        }
+
+        .user-avatar-initials {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1e3a5f, #2d5f9e);
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* Role select in modal */
+        .role-select-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .role-option {
+            border: 2px solid var(--border-color, #e8ecf0);
+            border-radius: var(--border-radius, 10px);
+            padding: 14px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .role-option:hover {
+            border-color: #1e3a5f;
+            background: #f0f5ff;
+        }
+
+        .role-option.active {
+            border-color: #1e3a5f;
+            background: #e8efff;
+        }
+
+        .role-option .role-icon {
+            font-size: 1.5rem;
+            margin-bottom: 6px;
+        }
+
+        .role-option .role-name {
+            font-size: 0.8125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .role-option .role-perms {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+            line-height: 1.3;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar"></aside>
+
+        <div class="main-content">
+            <header class="top-header">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <button class="hamburger-btn"
+                        onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+                    <h1 class="page-title">User <span>Management</span></h1>
+                </div>
+                <div class="header-actions">
+                    <span class="text-muted" id="userCount" style="font-size:0.8125rem;"></span>
+                </div>
+            </header>
+
+            <div class="page-container">
+
+                <!-- Toolbar -->
+                <div class="page-toolbar animate-in">
+                    <div class="toolbar-left">
+                        <div class="search-wrapper">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" class="search-input" id="userSearch"
+                                placeholder="Search by name, email, or username..." />
+                        </div>
+                        <select class="form-select" id="roleFilter"
+                            style="max-width:160px;border-radius:var(--border-radius-full);padding:10px 16px;">
+                            <option value="">All Roles</option>
+                            <option value="ADMIN">Admin</option>
+                            <option value="LIBRARIAN">Librarian</option>
+                            <option value="MEMBER">Member</option>
+                        </select>
+                        <select class="form-select" id="statusFilter"
+                            style="max-width:160px;border-radius:var(--border-radius-full);padding:10px 16px;">
+                            <option value="">All Status</option>
+                            <option value="true">Active</option>
+                            <option value="false">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Users Table -->
+                <div class="table-wrapper animate-in" style="animation-delay:0.1s;" id="usersTableWrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Joined</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <tr>
+                                <td colspan="7">
+                                    <div class="empty-state">
+                                        <div class="empty-icon">👥</div>
+                                        <h3>Loading users...</h3>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Role Modal -->
+    <div class="modal-overlay" id="roleModal">
+        <div class="modal" style="max-width:440px;">
+            <div class="modal-header">
+                <h2>Change User Role</h2>
+                <button class="modal-close" onclick="closeModal('roleModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size:0.875rem;color:var(--text-secondary);margin-bottom:16px;">
+                    Select a role for <strong id="roleModalUsername"></strong>:
+                </p>
+                <div class="role-select-grid">
+                    <div class="role-option" data-role="ADMIN" onclick="selectRole('ADMIN',this)">
+                        <div class="role-icon">👑</div>
+                        <div class="role-name">Admin</div>
+                        <div class="role-perms">Full system access</div>
+                    </div>
+                    <div class="role-option" data-role="LIBRARIAN" onclick="selectRole('LIBRARIAN',this)">
+                        <div class="role-icon">📚</div>
+                        <div class="role-name">Librarian</div>
+                        <div class="role-perms">Manage books & members</div>
+                    </div>
+                    <div class="role-option" data-role="MEMBER" onclick="selectRole('MEMBER',this)">
+                        <div class="role-icon">👤</div>
+                        <div class="role-name">Member</div>
+                        <div class="role-perms">Browse & borrow books</div>
+                    </div>
+                </div>
+                <input type="hidden" id="roleModalUserId" />
+                <input type="hidden" id="selectedRole" />
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('roleModal')">Cancel</button>
+                <button class="btn btn-primary" id="saveRoleBtn" onclick="saveRole()" disabled>Save Role</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Detail Modal -->
+    <div class="modal-overlay" id="userDetailModal">
+        <div class="modal" style="max-width:480px;">
+            <div class="modal-header">
+                <h2>User Details</h2>
+                <button class="modal-close" onclick="closeModal('userDetailModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+                    <div id="detailAvatar"></div>
+                    <div>
+                        <div style="font-size:1.1rem;font-weight:700;" id="detailName"></div>
+                        <div style="font-size:0.8125rem;color:var(--text-muted);" id="detailEmail"></div>
+                        <span class="role-badge" id="detailRoleBadge"
+                            style="margin-top:6px;display:inline-block;"></span>
+                    </div>
+                </div>
+                <div id="detailRows"></div>
+            </div>
+            <div class="modal-footer" id="detailFooter"></div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/users.js"></script>
+</body>
+
+</html>

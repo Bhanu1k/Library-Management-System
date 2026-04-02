@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Books — Library Management System</title>
+  <meta name="description" content="Browse, search, add, edit, and delete books in the library catalog." />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/books.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <div class="main-content">
+      <header class="top-header">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button class="hamburger-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+          <h1 class="page-title">Books <span>Catalog</span></h1>
+        </div>
+        <div class="header-actions">
+          <span class="text-muted" id="bookCount" style="font-size:0.8125rem;"></span>
+        </div>
+      </header>
+
+      <div class="page-container">
+        <!-- Toolbar -->
+        <div class="page-toolbar animate-in">
+          <div class="toolbar-left">
+            <div class="search-wrapper">
+              <span class="search-icon">🔍</span>
+              <input type="text" class="search-input" id="bookSearch" placeholder="Search by title, author, or ISBN..." />
+            </div>
+            <select class="form-select" id="categoryFilter" style="max-width:180px;border-radius:var(--border-radius-full);padding:10px 16px;">
+              <option value="">All Categories</option>
+            </select>
+            <select class="form-select" id="sortBy" style="max-width:180px;border-radius:var(--border-radius-full);padding:10px 16px;">
+              <option value="title">Sort: Title</option>
+              <option value="author">Sort: Author</option>
+              <option value="publishedYear">Sort: Year</option>
+              <option value="availableCopies">Sort: Availability</option>
+            </select>
+            <select class="form-select" id="sortDir" style="max-width:150px;border-radius:var(--border-radius-full);padding:10px 16px;">
+              <option value="asc">Ascending</option>
+              <option value="desc">Descending</option>
+            </select>
+          </div>
+          <div class="toolbar-right" id="bookActions">
+            <button class="btn btn-primary" onclick="openBookModal()">
+              ＋ Add Book
+            </button>
+          </div>
+        </div>
+
+        <!-- Books Table -->
+        <div class="table-wrapper animate-in" style="animation-delay:0.1s" id="booksTableWrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Author</th>
+                <th>ISBN</th>
+                <th>Category</th>
+                <th>Available</th>
+                <th>Year</th>
+                <th id="actionsHeader">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="booksTableBody">
+              <tr>
+                <td colspan="7">
+                  <div class="empty-state">
+                    <div class="empty-icon">📚</div>
+                    <h3>Loading books...</h3>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" id="booksPagination"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Book Modal -->
+  <div class="modal-overlay" id="bookModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="bookModalTitle">Add New Book</h2>
+        <button class="modal-close" onclick="closeModal('bookModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="bookForm" onsubmit="saveBook(event)">
+          <input type="hidden" id="bookId" />
+
+          <div class="form-group">
+            <label class="form-label" for="bookTitle">Title <span class="required">*</span></label>
+            <input type="text" class="form-input" id="bookTitle" placeholder="Enter book title" required />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="bookAuthor">Author <span class="required">*</span></label>
+              <input type="text" class="form-input" id="bookAuthor" placeholder="Author name" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="bookIsbn">ISBN <span class="required">*</span></label>
+              <input type="text" class="form-input" id="bookIsbn" placeholder="e.g. 9780132350884" required />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="bookCategory">Category</label>
+              <input type="text" class="form-input" id="bookCategory" placeholder="e.g. Technology" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="bookYear">Published Year</label>
+              <input type="number" class="form-input" id="bookYear" placeholder="e.g. 2020" min="1900" max="2099" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="bookCopies">Total Copies <span class="required">*</span></label>
+            <input type="number" class="form-input" id="bookCopies" placeholder="Number of copies" min="1" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="bookDescription">Description</label>
+            <textarea class="form-input" id="bookDescription" rows="3" placeholder="Brief description (optional)" style="resize:vertical;"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('bookModal')">Cancel</button>
+        <button class="btn btn-primary" id="bookSubmitBtn" onclick="document.getElementById('bookForm').requestSubmit()">
+          Save Book
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/books.js"></script>
+</body>
+</html>

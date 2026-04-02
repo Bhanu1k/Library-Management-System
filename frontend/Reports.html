@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Overdue Report — Library Management System</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/loans.css" />
+    <link rel="stylesheet" href="css/Reports.css" />
+    
+</head>
+
+<body>
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar"></aside>
+
+        <div class="main-content">
+            <header class="top-header">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <button class="hamburger-btn"
+                        onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+                    <h1 class="page-title">Overdue <span>Report</span></h1>
+                </div>
+            </header>
+
+            <div class="page-container">
+
+                <!-- Stats -->
+                <div class="report-stats animate-in">
+                    <div class="stat-card">
+                        <div class="stat-num stat-danger" id="statTotal">—</div>
+                        <div class="stat-label">Total Overdue</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-num stat-danger" id="statCritical">—</div>
+                        <div class="stat-label">Critical (&gt;14 days)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-num stat-warning" id="statWarning">—</div>
+                        <div class="stat-label">Warning (7–14 days)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-num stat-navy" id="statFine">—</div>
+                        <div class="stat-label">Total Fines (₹)</div>
+                    </div>
+                </div>
+
+                <!-- Toolbar -->
+                <div class="report-toolbar animate-in">
+                    <div class="filter-row">
+                        <input type="text" class="form-input" id="reportFilter" placeholder="Filter by member or book…"
+                            oninput="filterReport()" />
+                        <select class="form-select" id="reportSeverity" onchange="filterReport()">
+                            <option value="">All Severities</option>
+                            <option value="critical">Critical (&gt;14 days)</option>
+                            <option value="warning">Warning (7–14 days)</option>
+                            <option value="mild">Mild (1–6 days)</option>
+                        </select>
+                    </div>
+                    <button class="btn-export" id="exportBtn" onclick="exportPdf()">
+                        ⬇ Export PDF
+                    </button>
+                </div>
+
+                <!-- Table -->
+                <div class="table-wrapper animate-in" id="reportTableWrapper" style="display:none;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Member</th>
+                                <th>Book</th>
+                                <th>Due Date</th>
+                                <th>Days Overdue</th>
+                                <th>Fine (₹)</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportTableBody"></tbody>
+                    </table>
+                </div>
+
+                <!-- Empty state -->
+                <div id="reportEmpty" style="display:none;">
+                    <div class="empty-state">
+                        <div class="empty-icon">🎉</div>
+                        <h3>No overdue loans</h3>
+                        <p>Great! All books are returned on time.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/overdue-report.js"></script>
+</body>
+
+</html>

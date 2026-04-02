@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loans — Library Management System</title>
+  <meta name="description" content="Manage book loans: issue, return, track overdue, and view loan history." />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/loans.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <div class="main-content">
+      <header class="top-header">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button class="hamburger-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+          <h1 class="page-title" id="pageTitle">Loans <span>Management</span></h1>
+        </div>
+        <div class="header-actions" id="loanActions">
+          <button class="btn btn-primary" onclick="openIssueModal()">
+            ＋ Issue Book
+          </button>
+        </div>
+      </header>
+
+      <div class="page-container">
+        <!-- Tabs -->
+        <div class="tabs animate-in" id="loanTabs">
+          <button class="tab-btn active" data-tab="activeTab"  onclick="switchTab('active')">🔄 Active</button>
+          <button class="tab-btn"        data-tab="overdueTab" onclick="switchTab('overdue')">⚠️ Overdue</button>
+          <button class="tab-btn"        data-tab="finesTab"   onclick="switchTab('fines')">💰 Fines</button>
+          <button class="tab-btn"        data-tab="historyTab" onclick="switchTab('history')">📋 History</button>
+        </div>
+
+        <!-- Active Loans Tab -->
+        <div class="tab-content active" id="activeTab">
+          <div class="table-wrapper animate-in" id="activeTableWrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Book</th>
+                  <th>Member</th>
+                  <th>Issue Date</th>
+                  <th>Due Date</th>
+                  <th>Days Left</th>
+                  <th>Status</th>
+                  <th id="activeActionsHeader">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="activeLoansBody">
+                <tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🔄</div><h3>Loading...</h3></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Overdue Loans Tab -->
+        <div class="tab-content" id="overdueTab">
+          <div class="table-wrapper" id="overdueTableWrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Book</th>
+                  <th>Member</th>
+                  <th>Due Date</th>
+                  <th>Days Overdue</th>
+                  <th>Estimated Fine</th>
+                  <th>Status</th>
+                  <th id="overdueActionsHeader">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="overdueLoansBody">
+                <tr><td colspan="7"><div class="empty-state"><div class="empty-icon">⚠️</div><h3>Loading...</h3></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Fines Tab -->
+        <div class="tab-content" id="finesTab">
+          <div class="table-wrapper" id="finesTableWrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Member</th>
+                  <th>Book</th>
+                  <th>Return Date</th>
+                  <th>Fine Amount</th>
+                  <th>Fine Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="finesTableBody">
+                <tr><td colspan="6"><div class="empty-state"><div class="empty-icon">💰</div><h3>Loading...</h3></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- History Tab -->
+        <div class="tab-content" id="historyTab">
+          <div class="table-wrapper" id="historyTableWrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Book</th>
+                  <th>Member</th>
+                  <th>Issued</th>
+                  <th>Due</th>
+                  <th>Returned</th>
+                  <th>Fine</th>
+                  <th>Fine Status</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="historyLoansBody">
+                <tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📋</div><h3>Loading...</h3></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Issue Book Modal -->
+  <div class="modal-overlay" id="issueModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Issue Book</h2>
+        <button class="modal-close" onclick="closeModal('issueModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="issueForm" onsubmit="issueBook(event)">
+          <div class="form-group">
+            <label class="form-label" for="issueBookId">Select Book <span class="required">*</span></label>
+            <select class="form-select" id="issueBookId" required>
+              <option value="">— Choose a book —</option>
+            </select>
+            <div class="form-hint" id="bookAvailability"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="issueMemberId">Select Member <span class="required">*</span></label>
+            <select class="form-select" id="issueMemberId" required>
+              <option value="">— Choose a member —</option>
+            </select>
+          </div>
+          <div class="issue-summary hidden" id="issueSummary">
+            <div class="summary-row">
+              <span>Issue Date</span>
+              <strong id="summaryIssueDate"></strong>
+            </div>
+            <div class="summary-row">
+              <span>Due Date</span>
+              <strong id="summaryDueDate"></strong>
+            </div>
+            <div class="summary-row">
+              <span>Loan Period</span>
+              <strong>14 days</strong>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('issueModal')">Cancel</button>
+        <button class="btn btn-primary" id="issueSubmitBtn" onclick="document.getElementById('issueForm').requestSubmit()">
+          Issue Book
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Return Modal -->
+  <div class="modal-overlay" id="returnModal">
+    <div class="modal" style="max-width:420px;">
+      <div class="modal-header">
+        <h2>Return Book</h2>
+        <button class="modal-close" onclick="closeModal('returnModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="return-info" id="returnInfo">
+          <div class="return-book-name" id="returnBookName"></div>
+          <div class="return-member-name" id="returnMemberName"></div>
+          <div class="return-details">
+            <div class="summary-row">
+              <span>Due Date</span>
+              <strong id="returnDueDate"></strong>
+            </div>
+            <div class="summary-row">
+              <span>Return Date</span>
+              <strong id="returnReturnDate"></strong>
+            </div>
+            <div class="summary-row fine-row" id="fineRow">
+              <span>Overdue Fine</span>
+              <strong class="text-danger" id="returnFine"></strong>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('returnModal')">Cancel</button>
+        <button class="btn btn-success" id="returnConfirmBtn" onclick="confirmReturn()">
+          Confirm Return
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pay Fine Modal -->
+  <div class="modal-overlay" id="payFineModal">
+    <div class="modal" style="max-width:420px;">
+      <div class="modal-header">
+        <h2>Mark Fine as Paid</h2>
+        <button class="modal-close" onclick="closeModal('payFineModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="return-details">
+          <div class="summary-row">
+            <span>Member</span>
+            <strong id="payFineMember"></strong>
+          </div>
+          <div class="summary-row">
+            <span>Book</span>
+            <strong id="payFineBook"></strong>
+          </div>
+          <div class="summary-row">
+            <span>Fine Amount</span>
+            <strong class="text-danger" id="payFineAmount"></strong>
+          </div>
+        </div>
+        <p style="margin-top:16px;font-size:0.875rem;color:var(--text-muted);">
+          Confirm that this fine has been collected from the member.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('payFineModal')">Cancel</button>
+        <button class="btn btn-success" id="payFineConfirmBtn" onclick="confirmPayFine()">
+          ✓ Confirm Payment
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Waive Fine Modal -->
+  <div class="modal-overlay" id="waiveFineModal">
+    <div class="modal" style="max-width:420px;">
+      <div class="modal-header">
+        <h2>Waive Fine</h2>
+        <button class="modal-close" onclick="closeModal('waiveFineModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="return-details">
+          <div class="summary-row">
+            <span>Member</span>
+            <strong id="waiveFineMember"></strong>
+          </div>
+          <div class="summary-row">
+            <span>Book</span>
+            <strong id="waiveFineBook"></strong>
+          </div>
+          <div class="summary-row">
+            <span>Fine Amount</span>
+            <strong class="text-danger" id="waiveFineAmount"></strong>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:16px;">
+          <label class="form-label" for="waiveReason">Reason for Waiver <span class="required">*</span></label>
+          <textarea class="form-input" id="waiveReason" rows="2"
+            placeholder="e.g. Medical emergency, system error, goodwill gesture..."
+            style="resize:vertical;" required></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('waiveFineModal')">Cancel</button>
+        <button class="btn btn-primary" id="waiveFineConfirmBtn" onclick="confirmWaiveFine()">
+          Waive Fine
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/loans.js"></script>
+</body>
+</html>

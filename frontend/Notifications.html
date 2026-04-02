@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notifications — Library Management System</title>
+  <meta name="description" content="View and manage your notifications, alerts, and preferences." />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/Notifications.css" />
+  <link rel="stylesheet" href="css/Notification-bell.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <div class="main-content">
+      <header class="top-header">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button class="hamburger-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+          <h1 class="page-title">Notifications <span>Centre</span></h1>
+        </div>
+        <div class="header-actions" id="headerActions">
+          <span class="text-muted" id="notifCount" style="font-size:0.8125rem;"></span>
+          <button class="btn btn-secondary" onclick="markAllRead()">✓ Mark All Read</button>
+          <button class="btn btn-primary"   onclick="openModal('prefsModal')">⚙ Preferences</button>
+        </div>
+      </header>
+
+      <div class="page-container">
+
+        <!-- Filter Tabs -->
+        <div class="tabs animate-in" id="notifTabs">
+          <button class="tab-btn active" data-filter="all"               onclick="setFilter('all',this)">🔔 All</button>
+          <button class="tab-btn"        data-filter="unread"            onclick="setFilter('unread',this)">● Unread</button>
+          <button class="tab-btn"        data-filter="DUE_DATE_REMINDER" onclick="setFilter('DUE_DATE_REMINDER',this)">📅 Due Date</button>
+          <button class="tab-btn"        data-filter="FINE_ALERT"        onclick="setFilter('FINE_ALERT',this)">💰 Fines</button>
+          <button class="tab-btn"        data-filter="NEW_BOOK_ARRIVAL"  onclick="setFilter('NEW_BOOK_ARRIVAL',this)">📚 New Books</button>
+        </div>
+
+        <!-- Notifications List -->
+        <div class="table-wrapper animate-in" style="animation-delay:0.1s;" id="notifWrapper">
+          <div id="notifList">
+            <div class="empty-state">
+              <div class="empty-icon">🔔</div>
+              <h3>Loading notifications...</h3>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Preferences Modal -->
+  <div class="modal-overlay" id="prefsModal">
+    <div class="modal" style="max-width:520px;">
+      <div class="modal-header">
+        <h2>Notification Preferences</h2>
+        <button class="modal-close" onclick="closeModal('prefsModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="prefsForm" onsubmit="savePreferences(event)">
+
+          <p class="pref-section-title">Notification Types</p>
+
+          <div class="pref-row">
+            <div class="pref-info">
+              <div class="pref-label">📅 Due Date Reminders</div>
+              <div class="pref-desc">Get reminded before your borrowed book is due</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="prefDueDate" onchange="togglePrefSub('prefDueDateSub',this.checked)" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="pref-sub" id="prefDueDateSub" style="display:none;">
+            <label class="form-label" for="prefDueDays">Remind me</label>
+            <select class="form-select" id="prefDueDays" style="max-width:200px;">
+              <option value="1">1 day before</option>
+              <option value="2">2 days before</option>
+              <option value="3" selected>3 days before</option>
+              <option value="5">5 days before</option>
+              <option value="7">7 days before</option>
+            </select>
+          </div>
+
+          <div class="pref-row">
+            <div class="pref-info">
+              <div class="pref-label">💰 Fine Alerts</div>
+              <div class="pref-desc">Be notified when fines accumulate on overdue books</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="prefFineAlert" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="pref-row">
+            <div class="pref-info">
+              <div class="pref-label">📚 New Book Arrivals</div>
+              <div class="pref-desc">Know when new books matching your interests arrive</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="prefNewBook" onchange="togglePrefSub('prefNewBookSub',this.checked)" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="pref-sub" id="prefNewBookSub" style="display:none;">
+            <label class="form-label" for="prefCategories">Preferred Categories</label>
+            <input type="text" class="form-input" id="prefCategories"
+              placeholder="e.g. Fiction, Science, Technology" />
+            <div class="form-hint">Leave blank to receive all new arrivals.</div>
+          </div>
+
+          <p class="pref-section-title" style="margin-top:20px;">Delivery Methods</p>
+          <div class="delivery-row">
+            <label class="checkbox-label"><input type="checkbox" id="prefInApp" /> 🔔 In-App</label>
+            <label class="checkbox-label"><input type="checkbox" id="prefEmail" /> 📧 Email</label>
+            <label class="checkbox-label"><input type="checkbox" id="prefSms"   /> 📱 SMS</label>
+          </div>
+
+          <p class="pref-section-title" style="margin-top:20px;">Frequency</p>
+          <select class="form-select" id="prefFrequency">
+            <option value="IMMEDIATE">Immediate</option>
+            <option value="DAILY">Daily digest</option>
+            <option value="WEEKLY">Weekly digest</option>
+          </select>
+
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('prefsModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="document.getElementById('prefsForm').requestSubmit()">
+          Save Preferences
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/Notifications.js"></script>
+</body>
+</html>
