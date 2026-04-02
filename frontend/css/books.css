@@ -1,0 +1,58 @@
+/* ============================================
+   BOOKS PAGE STYLES
+   ============================================ */
+
+/* Availability Indicator */
+.availability {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 0.8125rem;
+}
+
+.availability .avail-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.availability.in-stock .avail-dot { background: var(--success); }
+.availability.low-stock .avail-dot { background: var(--warning); }
+.availability.out-of-stock .avail-dot { background: var(--danger); }
+
+.availability.in-stock { color: var(--success); }
+.availability.low-stock { color: var(--warning); }
+.availability.out-of-stock { color: var(--danger); }
+
+/* Book title cell */
+.book-title-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.book-title-cell .title {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.book-title-cell .subtitle {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Category tag */
+.category-tag {
+  display: inline-block;
+  padding: 2px 10px;
+  background: var(--gray-100);
+  color: var(--text-secondary);
+  border-radius: var(--border-radius-full);
+  font-size: 0.75rem;
+  font-weight: 500;
+}

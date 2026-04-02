@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Advanced Search — Library Management System</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/Books_search.css" />
+    
+</head>
+
+<body>
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar"></aside>
+
+        <div class="main-content">
+            <header class="top-header">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <button class="hamburger-btn"
+                        onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+                    <h1 class="page-title">Advanced <span>Search</span></h1>
+                </div>
+            </header>
+
+            <div class="page-container">
+
+                <!-- Search Panel -->
+                <div class="search-panel animate-in">
+                    <div class="search-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="sTitle">Title</label>
+                            <input type="text" class="form-input" id="sTitle" placeholder="e.g. Harry Potter" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="sAuthor">Author</label>
+                            <input type="text" class="form-input" id="sAuthor" placeholder="e.g. J.K. Rowling" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="sIsbn">ISBN</label>
+                            <input type="text" class="form-input" id="sIsbn" placeholder="e.g. 9780132350884" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="sCategory">Category</label>
+                            <select class="form-select" id="sCategory">
+                                <option value="">All Categories</option>
+                                <option>Fiction</option>
+                                <option>Non-Fiction</option>
+                                <option>Science</option>
+                                <option>History</option>
+                                <option>Technology</option>
+                                <option>Arts</option>
+                                <option>Biography</option>
+                                <option>Children</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Published Year</label>
+                            <div class="year-row">
+                                <input type="number" class="form-input" id="sYearFrom" placeholder="From" min="1800"
+                                    max="2099" />
+                                <input type="number" class="form-input" id="sYearTo" placeholder="To" min="1800"
+                                    max="2099" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="search-footer">
+                        <div class="sort-row">
+                            <label>Sort by</label>
+                            <select class="form-select" id="sSortBy">
+                                <option value="title">Title</option>
+                                <option value="author">Author</option>
+                                <option value="publishedYear">Year</option>
+                                <option value="availableCopies">Availability</option>
+                            </select>
+                            <select class="form-select" id="sSortDir">
+                                <option value="asc">A → Z</option>
+                                <option value="desc">Z → A</option>
+                            </select>
+                        </div>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="sAvailableOnly" />
+                            Available only
+                        </label>
+                        <div class="search-actions">
+                            <button class="btn btn-secondary" onclick="resetSearch()">Reset</button>
+                            <button class="btn btn-primary" id="searchBtn" onclick="runSearch(0)">🔍 Search</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Error -->
+                <div id="searchError"
+                    style="display:none;color:var(--danger,#e74c3c);margin-bottom:12px;font-size:0.875rem;"></div>
+
+                <!-- Results -->
+                <div id="resultsSection" style="display:none;">
+                    <p class="results-meta" id="resultsMeta"></p>
+                    <div class="table-wrapper animate-in" id="searchTableWrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Title</th>
+                                    <th>Author</th>
+                                    <th>ISBN</th>
+                                    <th>Category</th>
+                                    <th>Year</th>
+                                    <th>Available</th>
+                                </tr>
+                            </thead>
+                            <tbody id="searchTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="searchPagination"></div>
+                </div>
+
+                <!-- Empty state -->
+                <div id="searchEmpty" class="search-empty" style="display:none;">
+                    <div class="empty-icon">🔍</div>
+                    <h3>No books found</h3>
+                    <p>Try adjusting your search filters.</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/books-search.js"></script>
+</body>
+
+</html>

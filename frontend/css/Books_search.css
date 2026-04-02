@@ -1,0 +1,94 @@
+
+        .search-panel {
+            background: var(--surface, #fff);
+            border-radius: var(--border-radius, 10px);
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color, #e8ecf0);
+        }
+
+        .search-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .search-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .search-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .year-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .search-footer {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color, #e8ecf0);
+        }
+
+        .sort-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sort-row label {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .sort-row .form-select {
+            max-width: 140px;
+            padding: 8px 12px;
+            font-size: 0.8125rem;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .search-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Results */
+        .results-meta {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .search-empty {
+            text-align: center;
+            padding: 60px 24px;
+            color: var(--text-muted);
+        }
+
+        .search-empty .empty-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }

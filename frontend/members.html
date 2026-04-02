@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Members — Library Management System</title>
+  <meta name="description" content="Manage library members: register, search, update, and view loan history." />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/members.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <div class="main-content">
+      <header class="top-header">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button class="hamburger-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+          <h1 class="page-title">Members <span>Management</span></h1>
+        </div>
+        <div class="header-actions">
+          <span class="text-muted" id="memberCount" style="font-size:0.8125rem;"></span>
+        </div>
+      </header>
+
+      <div class="page-container">
+
+        <!-- Expiring Soon Banner -->
+        <div id="expiryBanner" class="expiry-banner animate-in" style="display:none;">
+          <span class="expiry-banner-icon">⚠️</span>
+          <span id="expiryBannerText"></span>
+          <button class="btn btn-secondary" style="padding:6px 14px;font-size:0.8125rem;" onclick="showExpiringMembers()">View All</button>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="page-toolbar animate-in">
+          <div class="toolbar-left">
+            <div class="search-wrapper">
+              <span class="search-icon">🔍</span>
+              <input type="text" class="search-input" id="memberSearch" placeholder="Search by name, email, or phone..." />
+            </div>
+            <select class="form-select" id="statusFilter" style="max-width:160px;border-radius:var(--border-radius-full);padding:10px 16px;">
+              <option value="">All Status</option>
+              <option value="ACTIVE">Active</option>
+              <option value="EXPIRED">Expired</option>
+              <option value="INACTIVE">Inactive</option>
+            </select>
+          </div>
+          <div class="toolbar-right">
+            <button class="btn btn-primary" onclick="openMemberModal()">
+              ＋ Register Member
+            </button>
+          </div>
+        </div>
+
+        <!-- Members Table -->
+        <div class="table-wrapper animate-in" style="animation-delay:0.1s" id="membersTableWrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Member</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Joined</th>
+                <th>Expiry</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="membersTableBody">
+              <tr>
+                <td colspan="7">
+                  <div class="empty-state">
+                    <div class="empty-icon">👥</div>
+                    <h3>Loading members...</h3>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Member Modal -->
+  <div class="modal-overlay" id="memberModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="memberModalTitle">Register New Member</h2>
+        <button class="modal-close" onclick="closeModal('memberModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="memberForm" onsubmit="saveMember(event)">
+          <input type="hidden" id="memberId" />
+
+          <div class="form-group">
+            <label class="form-label" for="memberName">Full Name <span class="required">*</span></label>
+            <input type="text" class="form-input" id="memberName" placeholder="Enter full name" required />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="memberEmail">Email <span class="required">*</span></label>
+              <input type="email" class="form-input" id="memberEmail" placeholder="email@example.com" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="memberPhone">Phone</label>
+              <input type="tel" class="form-input" id="memberPhone" placeholder="e.g. 9876543210" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="memberAddress">Address</label>
+            <textarea class="form-input" id="memberAddress" rows="2" placeholder="Enter address (optional)" style="resize:vertical;"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="memberExpiry">Membership Expiry Date</label>
+            <input type="date" class="form-input" id="memberExpiry" />
+            <div class="form-hint">Leave blank to auto-set 1 year from today.</div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('memberModal')">Cancel</button>
+        <button class="btn btn-primary" id="memberSubmitBtn" onclick="document.getElementById('memberForm').requestSubmit()">
+          Register Member
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Renew Membership Modal -->
+  <div class="modal-overlay" id="renewModal">
+    <div class="modal" style="max-width:420px;">
+      <div class="modal-header">
+        <h2>Renew Membership</h2>
+        <button class="modal-close" onclick="closeModal('renewModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="renew-info" id="renewInfo">
+          <div class="return-book-name" id="renewMemberName"></div>
+          <div class="return-details" style="margin-top:16px;">
+            <div class="summary-row">
+              <span>Current Expiry</span>
+              <strong id="renewCurrentExpiry"></strong>
+            </div>
+            <div class="summary-row">
+              <span>New Expiry After Renewal</span>
+              <strong id="renewNewExpiry" style="color:var(--success,#27ae60);"></strong>
+            </div>
+            <div class="summary-row">
+              <span>Extension</span>
+              <strong>1 Year</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('renewModal')">Cancel</button>
+        <button class="btn btn-success" id="renewConfirmBtn" onclick="confirmRenew()">
+          ✓ Confirm Renewal
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Member Loans Modal -->
+  <div class="modal-overlay" id="memberLoansModal">
+    <div class="modal" style="max-width:640px;">
+      <div class="modal-header">
+        <h2 id="memberLoansTitle">Loan History</h2>
+        <button class="modal-close" onclick="closeModal('memberLoansModal')">✕</button>
+      </div>
+      <div class="modal-body" style="padding:0;">
+        <div class="table-wrapper" style="border:none;border-radius:0;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Book</th>
+                <th>Issued</th>
+                <th>Due</th>
+                <th>Returned</th>
+                <th>Fine</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="memberLoansBody">
+              <tr><td colspan="6" class="text-center text-muted">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/members.js"></script>
+</body>
+</html>

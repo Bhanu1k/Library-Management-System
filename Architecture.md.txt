@@ -1,0 +1,151 @@
+# Architecture - Library Management System
+
+## Overview
+The Library Management System (LMS) follows a **3-Tier Architecture** with a clear separation between the Presentation Layer, Business Logic Layer, and Data Layer.
+
+---
+
+## Architecture Diagram
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                  CLIENT (Browser)                        │
+│         HTML5 + CSS3 + Vanilla JavaScript                │
+│   ┌──────────┐  ┌──────────┐  ┌──────────────────────┐  │
+│   │  Pages   │  │  Styles  │  │    JS Modules        │  │
+│   │ (HTML)   │  │  (CSS)   │  │ (Fetch API / AJAX)   │  │
+│   └──────────┘  └──────────┘  └──────────────────────┘  │
+└────────────────────────┬────────────────────────────────┘
+                         │  HTTP / REST API (JSON)
+                         ▼
+┌─────────────────────────────────────────────────────────┐
+│              BACKEND (Spring Boot)                       │
+│  ┌────────────────────────────────────────────────────┐ │
+│  │              Controller Layer (REST)               │ │
+│  │  /api/books  /api/members  /api/loans  /api/auth   │ │
+│  └────────────────────┬───────────────────────────────┘ │
+│  ┌────────────────────▼───────────────────────────────┐ │
+│  │              Service Layer (Business Logic)        │ │
+│  │  BookService  MemberService  LoanService           │ │
+│  └────────────────────┬───────────────────────────────┘ │
+│  ┌────────────────────▼───────────────────────────────┐ │
+│  │           Repository Layer (Spring Data JPA)       │ │
+│  │  BookRepository  MemberRepository  LoanRepository  │ │
+│  └────────────────────┬───────────────────────────────┘ │
+│  ┌────────────────────▼───────────────────────────────┐ │
+│  │              Security Layer (Spring Security)      │ │
+│  │              JWT Authentication + Role-Based Auth  │ │
+│  └────────────────────────────────────────────────────┘ │
+└────────────────────────┬────────────────────────────────┘
+                         │  JPA / Hibernate
+                         ▼
+┌─────────────────────────────────────────────────────────┐
+│                  DATABASE (MySQL)                        │
+│   Tables: users, books, members, loans, categories      │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Layer Responsibilities
+
+### 1. Presentation Layer (Frontend)
+- **Technology**: HTML5, CSS3, JavaScript (ES6+)
+- **Responsibility**: UI rendering, user interaction, API calls via Fetch API
+- **Structure**:
+  - `index.html` — Landing / Login page
+  - `dashboard.html` — Admin dashboard
+  - `books.html` — Books management
+  - `members.html` — Member management
+  - `loans.html` — Loan management
+  - `css/` — Stylesheets
+  - `js/` — JavaScript modules
+
+### 2. Application Layer (Spring Boot Backend)
+- **Technology**: Java 17+, Spring Boot 3.x
+- **Responsibility**: Business logic, REST API, authentication
+- **Key Modules**:
+  - `AuthController` — Login, Register, JWT issuance
+  - `BookController` — CRUD for books
+  - `MemberController` — CRUD for members
+  - `LoanController` — Issue/return books, fine calculation
+
+### 3. Data Layer (MySQL)
+- **Technology**: MySQL 8.x, Spring Data JPA, Hibernate
+- **Responsibility**: Persistent storage, data integrity
+
+---
+
+## Security Architecture
+
+```
+Request → JWT Filter → Authenticate Token → Role Check → Controller
+                              ↓
+                       (Invalid Token)
+                              ↓
+                       401 Unauthorized
+```
+
+- JWT tokens stored in `localStorage` on the client
+- Token sent via `Authorization: Bearer <token>` header
+- Roles: `ADMIN`, `LIBRARIAN`, `MEMBER`
+
+---
+
+## Project Folder Structure
+
+```
+library-management-system/
+│
+├── frontend/
+│   ├── index.html
+│   ├── dashboard.html
+│   ├── books.html
+│   ├── members.html
+│   ├── loans.html
+│   ├── css/
+│   │   ├── style.css
+│   │   └── dashboard.css
+│   └── js/
+│       ├── auth.js
+│       ├── books.js
+│       ├── members.js
+│       └── loans.js
+│
+└── backend/
+    └── src/main/java/com/library/
+        ├── controller/
+        │   ├── AuthController.java
+        │   ├── BookController.java
+        │   ├── MemberController.java
+        │   └── LoanController.java
+        ├── service/
+        │   ├── BookService.java
+        │   ├── MemberService.java
+        │   └── LoanService.java
+        ├── repository/
+        │   ├── BookRepository.java
+        │   ├── MemberRepository.java
+        │   └── LoanRepository.java
+        ├── model/
+        │   ├── Book.java
+        │   ├── Member.java
+        │   ├── Loan.java
+        │   └── User.java
+        ├── security/
+        │   ├── JwtUtil.java
+        │   ├── JwtFilter.java
+        │   └── SecurityConfig.java
+        └── dto/
+            ├── BookDTO.java
+            ├── MemberDTO.java
+            └── LoanDTO.java
+```
+
+---
+
+## Communication Protocol
+- **Format**: JSON over REST
+- **Auth**: JWT Bearer Token
+- **CORS**: Configured in Spring Boot to allow frontend origin
+- **Port**: Backend runs on `8085`, Frontend served on `3000` or via Live Server

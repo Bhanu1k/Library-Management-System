@@ -1,0 +1,71 @@
+/* ============================================
+   MEMBERS PAGE STYLES
+   ============================================ */
+
+.member-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.member-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--border-radius-full);
+  background: linear-gradient(135deg, var(--primary-100), var(--primary-200));
+  color: var(--primary-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  flex-shrink: 0;
+}
+
+.member-info .name {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+}
+
+.member-info .address {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Expiry tags ── */
+.expiry-tag {
+  display: inline-block;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+.expiry-tag small {
+  display: block;
+  font-size: 0.70rem;
+  font-weight: 600;
+}
+.expiry-ok      { color: var(--text-secondary); }
+.expiry-soon    { color: #e67e22; }
+.expiry-soon small  { color: #e67e22; }
+.expiry-expired { color: var(--danger, #e74c3c); }
+.expiry-expired small { color: var(--danger, #e74c3c); }
+
+/* ── Expiring soon banner ── */
+.expiry-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff8e1;
+  border: 1px solid #ffe082;
+  border-radius: var(--border-radius, 10px);
+  padding: 12px 18px;
+  margin-bottom: 20px;
+  font-size: 0.875rem;
+  color: #795548;
+}
+.expiry-banner-icon { font-size: 1.1rem; }
+.expiry-banner span { flex: 1; }

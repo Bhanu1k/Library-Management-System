@@ -1,0 +1,104 @@
+/* ============================================
+   LOANS PAGE STYLES
+   ============================================ */
+
+/* Days indicator */
+.days-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  font-size: 0.8125rem;
+}
+
+.days-indicator.safe { color: var(--success); }
+.days-indicator.warning { color: var(--warning); }
+.days-indicator.danger { color: var(--danger); }
+
+/* Overdue highlight */
+.overdue-row {
+  background: rgba(239, 68, 68, 0.03) !important;
+}
+
+.overdue-row:hover {
+  background: rgba(239, 68, 68, 0.06) !important;
+}
+
+/* Issue Summary */
+.issue-summary {
+  background: var(--gray-50);
+  border-radius: var(--border-radius);
+  padding: 16px;
+  margin-top: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 0.875rem;
+}
+
+.summary-row span {
+  color: var(--text-secondary);
+}
+
+.summary-row strong {
+  color: var(--text-primary);
+}
+
+.summary-row + .summary-row {
+  border-top: 1px solid var(--border-color);
+}
+
+/* Fine highlight */
+.fine-row strong {
+  font-size: 1.125rem;
+}
+
+/* Return info */
+.return-info {
+  text-align: center;
+}
+
+.return-book-name {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.return-member-name {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+
+.return-details {
+  background: var(--gray-50);
+  border-radius: var(--border-radius);
+  padding: 16px;
+  border: 1px solid var(--border-color);
+  text-align: left;
+}
+
+/* Return button in table */
+.btn-return {
+  padding: 5px 14px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--border-radius-full);
+  background: var(--success-light);
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-return:hover {
+  background: var(--success);
+  color: white;
+  border-color: var(--success);
+}

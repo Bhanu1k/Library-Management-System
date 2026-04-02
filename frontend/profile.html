@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Profile — Library Management System</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* ── Profile layout ── */
+    .profile-layout {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+    @media (max-width: 768px) { .profile-layout { grid-template-columns: 1fr; } }
+
+    /* ── Avatar card ── */
+    .avatar-card {
+      background: var(--surface, #fff);
+      border: 1px solid var(--border-color, #e8ecf0);
+      border-radius: var(--border-radius, 10px);
+      padding: 32px 24px;
+      text-align: center;
+    }
+    .avatar-wrap {
+      position: relative;
+      width: 120px; height: 120px;
+      margin: 0 auto 16px;
+    }
+    .avatar-img {
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--border-color, #e8ecf0);
+      background: var(--bg-secondary, #f5f7fa);
+    }
+    .avatar-initials {
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1e3a5f, #2d5f9e);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem; font-weight: 700;
+      border: 3px solid var(--border-color, #e8ecf0);
+    }
+    .avatar-edit-btn {
+      position: absolute; bottom: 4px; right: 4px;
+      width: 32px; height: 32px; border-radius: 50%;
+      background: #1e3a5f; color: #fff; border: 2px solid #fff;
+      cursor: pointer; font-size: 0.875rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .avatar-edit-btn:hover { background: #16304f; }
+
+    .profile-name  { font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+    .profile-email { font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 12px; }
+
+    .role-badge {
+      display: inline-block; padding: 4px 14px;
+      border-radius: 999px; font-size: 0.75rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .06em;
+    }
+    .role-ADMIN     { background: #fdf0e8; color: #854f0b; }
+    .role-LIBRARIAN { background: #e8f4fd; color: #1565a0; }
+    .role-MEMBER    { background: #eaf8f0; color: #1b6b3a; }
+
+    .avatar-actions { display: flex; gap: 8px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+
+    /* ── Info cards ── */
+    .info-card {
+      background: var(--surface, #fff);
+      border: 1px solid var(--border-color, #e8ecf0);
+      border-radius: var(--border-radius, 10px);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .info-card-title {
+      font-size: 0.8125rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .06em; color: var(--text-muted); margin-bottom: 20px;
+    }
+
+    /* ── Picture preview modal ── */
+    .preview-wrap {
+      text-align: center; margin-bottom: 16px;
+    }
+    .preview-img {
+      width: 160px; height: 160px; border-radius: 50%;
+      object-fit: cover; border: 3px solid var(--border-color, #e8ecf0);
+      display: block; margin: 0 auto 12px;
+    }
+    .upload-drop-zone {
+      border: 2px dashed var(--border-color, #e8ecf0);
+      border-radius: var(--border-radius, 10px);
+      padding: 32px 16px; text-align: center; cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .upload-drop-zone:hover, .upload-drop-zone.dragover {
+      border-color: #1e3a5f; background: #f0f5ff;
+    }
+    .upload-drop-zone .drop-icon  { font-size: 2rem; margin-bottom: 8px; }
+    .upload-drop-zone .drop-text  { font-size: 0.875rem; color: var(--text-secondary); }
+    .upload-drop-zone .drop-hint  { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <div class="main-content">
+      <header class="top-header">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button class="hamburger-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+          <h1 class="page-title">My <span>Profile</span></h1>
+        </div>
+      </header>
+
+      <div class="page-container">
+        <div class="profile-layout animate-in">
+
+          <!-- Left: Avatar card -->
+          <div>
+            <div class="avatar-card">
+              <div class="avatar-wrap">
+                <div id="avatarDisplay"></div>
+                <button class="avatar-edit-btn" onclick="openModal('pictureModal')" title="Change photo">✏</button>
+              </div>
+              <div class="profile-name"  id="profileName">—</div>
+              <div class="profile-email" id="profileEmail">—</div>
+              <span class="role-badge"   id="profileRoleBadge">—</span>
+              <div class="avatar-actions">
+                <button class="btn btn-secondary" style="padding:6px 14px;font-size:0.8125rem;"
+                  onclick="openModal('pictureModal')">📷 Change Photo</button>
+                <button class="btn btn-secondary" style="padding:6px 14px;font-size:0.8125rem;color:var(--danger,#e74c3c);"
+                  onclick="confirmRemovePicture()" id="removePicBtn" style="display:none;">🗑 Remove</button>
+              </div>
+            </div>
+
+            <!-- Account info mini card -->
+            <div class="info-card" style="margin-top:20px;">
+              <div class="info-card-title">Account Info</div>
+              <div class="summary-row"><span>Username</span><strong id="infoUsername">—</strong></div>
+              <div class="summary-row"><span>Role</span><strong id="infoRole">—</strong></div>
+              <div class="summary-row"><span>Status</span><strong id="infoStatus">—</strong></div>
+              <div class="summary-row"><span>Member Since</span><strong id="infoJoined">—</strong></div>
+            </div>
+          </div>
+
+          <!-- Right: Edit forms -->
+          <div>
+            <!-- Personal info -->
+            <div class="info-card">
+              <div class="info-card-title">Personal Information</div>
+              <form id="profileForm" onsubmit="saveProfile(event)">
+                <div class="form-group">
+                  <label class="form-label" for="editFullName">Full Name</label>
+                  <input type="text" class="form-input" id="editFullName" placeholder="Your full name" />
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label" for="editEmail">Email</label>
+                    <input type="email" class="form-input" id="editEmail" placeholder="email@example.com" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="editPhone">Phone</label>
+                    <input type="tel" class="form-input" id="editPhone" placeholder="e.g. 9876543210" />
+                  </div>
+                </div>
+                <div class="modal-footer" style="padding:16px 0 0;border-top:1px solid var(--border-color,#e8ecf0);">
+                  <button type="submit" class="btn btn-primary" id="saveProfileBtn">Save Changes</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Change password -->
+            <div class="info-card">
+              <div class="info-card-title">Change Password</div>
+              <form id="passwordForm" onsubmit="changePassword(event)">
+                <div class="form-group">
+                  <label class="form-label" for="currentPassword">Current Password</label>
+                  <input type="password" class="form-input" id="currentPassword" placeholder="Enter current password" required />
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label" for="newPassword">New Password</label>
+                    <input type="password" class="form-input" id="newPassword" placeholder="Min. 6 characters" required minlength="6" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="confirmPassword">Confirm Password</label>
+                    <input type="password" class="form-input" id="confirmPassword" placeholder="Repeat new password" required />
+                  </div>
+                </div>
+                <div class="modal-footer" style="padding:16px 0 0;border-top:1px solid var(--border-color,#e8ecf0);">
+                  <button type="submit" class="btn btn-primary" id="savePasswordBtn">Update Password</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Picture Modal -->
+  <div class="modal-overlay" id="pictureModal">
+    <div class="modal" style="max-width:460px;">
+      <div class="modal-header">
+        <h2>Update Profile Picture</h2>
+        <button class="modal-close" onclick="closeModal('pictureModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <!-- Preview -->
+        <div class="preview-wrap" id="previewWrap" style="display:none;">
+          <img id="previewImg" class="preview-img" src="" alt="Preview" />
+          <p style="font-size:0.8125rem;color:var(--text-muted);">Preview — this is how your photo will look.</p>
+        </div>
+
+        <!-- Drop zone -->
+        <div class="upload-drop-zone" id="dropZone"
+          onclick="document.getElementById('picFileInput').click()"
+          ondragover="handleDragOver(event)"
+          ondragleave="handleDragLeave(event)"
+          ondrop="handleDrop(event)">
+          <div class="drop-icon">📷</div>
+          <div class="drop-text">Click to choose or drag & drop a photo</div>
+          <div class="drop-hint">JPEG, PNG, GIF, WEBP — max 2MB</div>
+        </div>
+        <input type="file" id="picFileInput" accept="image/jpeg,image/png,image/gif,image/webp"
+          style="display:none;" onchange="handleFileSelect(event)" />
+
+        <div id="picError" style="display:none;color:var(--danger,#e74c3c);font-size:0.875rem;margin-top:8px;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('pictureModal')">Cancel</button>
+        <button class="btn btn-primary" id="uploadBtn" onclick="uploadPicture()" disabled>Upload Photo</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/profile.js"></script>
+</body>
+</html>

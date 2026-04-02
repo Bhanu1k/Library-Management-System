@@ -1,0 +1,61 @@
+﻿[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------< com.library:library-management-system >----------------
+[INFO] Building Library Management System 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.3.2:clean (default-clean) @ library-management-system ---
+[INFO] Deleting C:\Users\Bhanu\OneDrive\Desktop\Antigravity\Library Management System\backend\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ library-management-system ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ library-management-system ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 30 source files with javac [debug release 17] to target\classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /C:/Users/Bhanu/OneDrive/Desktop/Antigravity/Library Management System/backend/src/main/java/com/library/config/DataSeeder.java:[50,17] cannot find symbol
+  symbol:   method memberId(long)
+  location: class com.library.model.User.UserBuilder
+[ERROR] /C:/Users/Bhanu/OneDrive/Desktop/Antigravity/Library Management System/backend/src/main/java/com/library/service/LoanService.java:[86,17] cannot find symbol
+  symbol:   method getMemberId()
+  location: variable user of type com.library.model.User
+[ERROR] /C:/Users/Bhanu/OneDrive/Desktop/Antigravity/Library Management System/backend/src/main/java/com/library/service/LoanService.java:[90,38] cannot find symbol
+  symbol:   method getMemberId()
+  location: variable user of type com.library.model.User
+[INFO] 3 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  5.958 s
+[INFO] Finished at: 2026-03-25T21:00:12+05:30
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.11.0:compile (default-compile) on project library-management-system: Compilation failure: Compilation failure: 
+[ERROR] /C:/Users/Bhanu/OneDrive/Desktop/Antigravity/Library Management System/backend/src/main/java/com/library/config/DataSeeder.java:[50,17] cannot find symbol
+[ERROR]   symbol:   method memberId(long)
+[ERROR]   location: class com.library.model.User.UserBuilder
+[ERROR] /C:/Users/Bhanu/OneDrive/Desktop/Antigravity/Library Management System/backend/src/main/java/com/library/service/LoanService.java:[86,17] cannot find symbol
+[ERROR]   symbol:   method getMemberId()
+[ERROR]   location: variable user of type com.library.model.User
+[ERROR] /C:/Users/Bhanu/OneDrive/Desktop/Antigravity/Library Management System/backend/src/main/java/com/library/service/LoanService.java:[90,38] cannot find symbol
+[ERROR]   symbol:   method getMemberId()
+[ERROR]   location: variable user of type com.library.model.User
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

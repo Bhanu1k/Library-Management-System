@@ -1,0 +1,194 @@
+package com.library.service;
+
+import com.library.model.Book;
+import com.library.model.Loan;
+import com.library.model.Loan.LoanStatus;
+import com.library.model.Member;
+import com.library.repository.BookRepository;
+import com.library.repository.LoanRepository;
+import com.library.repository.MemberRepository;
+import com.library.repository.UserRepository;
+import com.library.model.User;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class LoanService {
+
+    private final LoanRepository loanRepository;
+    private final BookRepository bookRepository;
+    private final MemberRepository memberRepository;
+    private final UserRepository userRepository;
+
+    private static final int    LOAN_PERIOD_DAYS = 14;
+    private static final int    MAX_ACTIVE_LOANS = 3;
+    private static final double FINE_PER_DAY     = 5.0;
+    private static final double MAX_FINE         = 500.0;
+
+    @Transactional
+    public Loan issueBook(Long bookId, Long memberId) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new RuntimeException("Book not found."));
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("Member not found."));
+
+        if (!"ACTIVE".equals(member.getStatus())) {
+            throw new RuntimeException("Member is not active. Cannot issue books.");
+        }
+
+        if (member.getExpiryDate() != null && member.getExpiryDate().isBefore(LocalDate.now())) {
+            throw new RuntimeException("Member's membership has expired. Please renew before issuing books.");
+        }
+
+        long activeLoans = loanRepository.countActiveLoansByMember(memberId);
+        if (activeLoans >= MAX_ACTIVE_LOANS) {
+            throw new RuntimeException("Member has reached the maximum limit of " + MAX_ACTIVE_LOANS + " concurrent loans.");
+        }
+
+        long overdueLoans = loanRepository.countOverdueLoansByMember(memberId, LocalDate.now());
+        if (overdueLoans > 0) {
+            throw new RuntimeException("Member has overdue books. Please return them first.");
+        }
+
+        // Block if member has unpaid fines
+        boolean hasUnpaidFines = loanRepository.findByMemberId(memberId).stream()
+                .anyMatch(l -> l.getFineAmount() != null
+                        && l.getFineAmount().compareTo(BigDecimal.ZERO) > 0
+                        && !Boolean.TRUE.equals(l.getFinePaid())
+                        && !Boolean.TRUE.equals(l.getFineWaived()));
+        if (hasUnpaidFines) {
+            throw new RuntimeException("Member has unpaid fines. Please clear them before issuing new books.");
+        }
+
+        if (book.getAvailableCopies() <= 0) {
+            throw new RuntimeException("No copies available for this book.");
+        }
+
+        Loan loan = Loan.builder()
+                .book(book)
+                .member(member)
+                .issueDate(LocalDate.now())
+                .dueDate(LocalDate.now().plusDays(LOAN_PERIOD_DAYS))
+                .status(LoanStatus.ACTIVE)
+                .fineAmount(BigDecimal.ZERO)
+                .finePaid(false)
+                .fineWaived(false)
+                .build();
+
+        book.setAvailableCopies(book.getAvailableCopies() - 1);
+        bookRepository.save(book);
+
+        return loanRepository.save(loan);
+    }
+
+    @Transactional
+    public Loan issueBookToUsername(Long bookId, String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Current user not found"));
+        if (user.getMemberId() == null) {
+            throw new RuntimeException("Your user account is not linked to a library member profile.");
+        }
+        return issueBook(bookId, user.getMemberId());
+    }
+
+    @Transactional
+    public Loan returnBook(Long loanId) {
+        Loan loan = loanRepository.findById(loanId)
+                .orElseThrow(() -> new RuntimeException("Loan not found."));
+
+        if (loan.getStatus() == LoanStatus.RETURNED) {
+            throw new RuntimeException("This book has already been returned.");
+        }
+
+        loan.setReturnDate(LocalDate.now());
+        loan.setStatus(LoanStatus.RETURNED);
+
+        if (LocalDate.now().isAfter(loan.getDueDate())) {
+            long daysOverdue = ChronoUnit.DAYS.between(loan.getDueDate(), LocalDate.now());
+            double fine = Math.min(daysOverdue * FINE_PER_DAY, MAX_FINE);
+            loan.setFineAmount(BigDecimal.valueOf(fine));
+        }
+
+        Book book = loan.getBook();
+        book.setAvailableCopies(book.getAvailableCopies() + 1);
+        bookRepository.save(book);
+
+        return loanRepository.save(loan);
+    }
+
+    // ── Mark fine as paid ─────────────────────────────────────
+    @Transactional
+    public Loan markFinePaid(Long loanId) {
+        Loan loan = loanRepository.findById(loanId)
+                .orElseThrow(() -> new RuntimeException("Loan not found."));
+
+        if (loan.getFineAmount().compareTo(BigDecimal.ZERO) == 0) {
+            throw new RuntimeException("This loan has no fine to pay.");
+        }
+        if (Boolean.TRUE.equals(loan.getFinePaid())) {
+            throw new RuntimeException("Fine has already been paid.");
+        }
+        if (Boolean.TRUE.equals(loan.getFineWaived())) {
+            throw new RuntimeException("Fine has already been waived.");
+        }
+
+        loan.setFinePaid(true);
+        loan.setFinePaidAt(LocalDateTime.now());
+        return loanRepository.save(loan);
+    }
+
+    // ── Waive fine (admin only) ───────────────────────────────
+    @Transactional
+    public Loan waiveFine(Long loanId, String reason) {
+        Loan loan = loanRepository.findById(loanId)
+                .orElseThrow(() -> new RuntimeException("Loan not found."));
+
+        if (loan.getFineAmount().compareTo(BigDecimal.ZERO) == 0) {
+            throw new RuntimeException("This loan has no fine to waive.");
+        }
+        if (Boolean.TRUE.equals(loan.getFinePaid())) {
+            throw new RuntimeException("Fine has already been paid — cannot waive.");
+        }
+        if (Boolean.TRUE.equals(loan.getFineWaived())) {
+            throw new RuntimeException("Fine has already been waived.");
+        }
+
+        loan.setFineWaived(true);
+        loan.setFineWaivedAt(LocalDateTime.now());
+        loan.setFineWaivedReason(reason != null ? reason : "Waived by admin");
+        return loanRepository.save(loan);
+    }
+
+    public List<Loan> getActiveLoans() {
+        return loanRepository.findByStatus(LoanStatus.ACTIVE);
+    }
+
+    public List<Loan> getOverdueLoans() {
+        return loanRepository.findOverdueLoans(LocalDate.now());
+    }
+
+    public List<Loan> getReturnedLoans() {
+        return loanRepository.findByStatus(LoanStatus.RETURNED);
+    }
+
+    public List<Loan> getLoansByMember(Long memberId) {
+        return loanRepository.findByMemberId(memberId);
+    }
+
+    public List<Loan> getLoansWithUnpaidFines() {
+        return loanRepository.findLoansWithUnpaidFines();
+    }
+
+    public List<Loan> getRecentLoans() {
+        List<Loan> loans = loanRepository.findRecentLoans();
+        return loans.size() > 10 ? loans.subList(0, 10) : loans;
+    }
+}

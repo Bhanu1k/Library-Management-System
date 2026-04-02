@@ -1,0 +1,175 @@
+# Product Requirements Document (PRD)
+# Library Management System
+
+**Version**: 1.0  
+**Date**: March 2026  
+**Status**: Active Development  
+
+---
+
+## 1. Executive Summary
+
+The Library Management System (LMS) is a full-stack web application designed to digitize and streamline library operations. It replaces manual record-keeping with an efficient digital system for managing books, members, and loan transactions.
+
+---
+
+## 2. Problem Statement
+
+Traditional libraries rely on manual registers and spreadsheets, leading to:
+- Difficulty tracking book availability in real-time
+- No automated overdue fine calculation
+- Slow member registration and lookup processes
+- No centralized dashboard for library statistics
+- Risk of data loss and human error
+
+---
+
+## 3. Goals & Objectives
+
+| Goal | Success Metric |
+|------|---------------|
+| Digitize book catalog | 100% of books searchable online |
+| Automate loan tracking | 0 manual entries for issue/return |
+| Reduce overdue management time | Auto-calculate fines on return |
+| Centralize member records | Single source of truth for all members |
+| Provide actionable insights | Real-time dashboard with key stats |
+
+---
+
+## 4. Target Users
+
+### Primary Users
+| Role | Description | Access Level |
+|------|-------------|--------------|
+| **Admin** | Library owner / manager | Full access — all modules |
+| **Librarian** | Library staff | Books, Members, Loans |
+| **Member** | Library subscriber | View own loans and profile |
+
+### User Personas
+
+**Admin — Rajesh (Library Manager)**
+- Needs real-time stats on book availability and overdue loans
+- Wants to manage staff accounts
+- Reviews fine collections at end of month
+
+**Librarian — Priya (Staff)**
+- Issues and returns books daily
+- Registers new members
+- Searches for books quickly during member requests
+
+**Member — Arjun (Student)**
+- Views his active loans and due dates
+- Checks what books are available
+- Views fine amount if any
+
+---
+
+## 5. Features & Requirements
+
+### 5.1 Authentication & Authorization
+
+| ID | Requirement | Priority |
+|----|-------------|----------|
+| AUTH-01 | Users can log in with username and password | Must Have |
+| AUTH-02 | JWT token issued on successful login | Must Have |
+| AUTH-03 | Role-based access control (ADMIN, LIBRARIAN, MEMBER) | Must Have |
+| AUTH-04 | Admin can create new user accounts | Must Have |
+| AUTH-05 | Logout clears session/token | Must Have |
+| AUTH-06 | Password stored as BCrypt hash | Must Have |
+
+### 5.2 Book Management
+
+| ID | Requirement | Priority |
+|----|-------------|----------|
+| BOOK-01 | Add a new book with title, author, ISBN, category, copies | Must Have |
+| BOOK-02 | View list of all books with pagination | Must Have |
+| BOOK-03 | Search books by title, author, or ISBN | Must Have |
+| BOOK-04 | Edit book details | Must Have |
+| BOOK-05 | Delete book (only if no active loans) | Must Have |
+| BOOK-06 | View available vs total copies | Must Have |
+| BOOK-07 | Filter books by category | Should Have |
+| BOOK-08 | Import books via CSV | Nice to Have |
+
+### 5.3 Member Management
+
+| ID | Requirement | Priority |
+|----|-------------|----------|
+| MEM-01 | Register a new member with name, email, phone | Must Have |
+| MEM-02 | View list of all members | Must Have |
+| MEM-03 | Search member by name or email | Must Have |
+| MEM-04 | Update member profile | Must Have |
+| MEM-05 | Deactivate/delete member | Must Have |
+| MEM-06 | View member loan history | Should Have |
+| MEM-07 | Member card / ID generation | Nice to Have |
+
+### 5.4 Loan Management
+
+| ID | Requirement | Priority |
+|----|-------------|----------|
+| LOAN-01 | Issue a book to a member (reduce available copies) | Must Have |
+| LOAN-02 | Return a book (increase available copies) | Must Have |
+| LOAN-03 | Set due date on issue (default: 14 days) | Must Have |
+| LOAN-04 | Calculate fine on return if overdue (₹5/day) | Must Have |
+| LOAN-05 | View all active loans | Must Have |
+| LOAN-06 | View overdue loans | Must Have |
+| LOAN-07 | View complete loan history | Should Have |
+| LOAN-08 | Email reminder for due date | Nice to Have |
+| LOAN-09 | Prevent issuing if member has overdue books | Should Have |
+
+### 5.5 Dashboard
+
+| ID | Requirement | Priority |
+|----|-------------|----------|
+| DASH-01 | Total books in library | Must Have |
+| DASH-02 | Total registered members | Must Have |
+| DASH-03 | Active loans count | Must Have |
+| DASH-04 | Overdue loans count | Must Have |
+| DASH-05 | Recently added books | Should Have |
+| DASH-06 | Recent loan activity | Should Have |
+
+---
+
+## 6. Non-Functional Requirements
+
+| Category | Requirement |
+|----------|-------------|
+| **Performance** | API response time < 500ms for all standard operations |
+| **Security** | All endpoints protected by JWT; passwords BCrypt hashed |
+| **Usability** | UI must be responsive and mobile-friendly |
+| **Reliability** | System uptime > 99% during library hours |
+| **Scalability** | System supports up to 10,000 books and 5,000 members |
+| **Compatibility** | Works on Chrome, Firefox, Edge (latest versions) |
+
+---
+
+## 7. Out of Scope (Phase 1)
+
+- Online book reservation system
+- E-book / digital content support
+- Payment gateway for fine collection
+- Mobile app (Android/iOS)
+- Multi-branch library support
+- Third-party API integrations (Google Books, etc.)
+
+---
+
+## 8. Milestones & Timeline
+
+| Phase | Deliverables | Duration |
+|-------|-------------|----------|
+| Phase 1 | Project setup, DB schema, Auth (Login/JWT) | Week 1 |
+| Phase 2 | Book Management (CRUD + Search) | Week 2 |
+| Phase 3 | Member Management (CRUD) | Week 2 |
+| Phase 4 | Loan Management (Issue/Return/Fines) | Week 3 |
+| Phase 5 | Dashboard + Frontend Integration | Week 4 |
+| Phase 6 | Testing, Bug Fixes, Deployment | Week 5 |
+
+---
+
+## 9. Success Criteria
+
+- All Must Have features implemented and functional
+- Zero critical bugs in production
+- All REST APIs tested and documented
+- Frontend communicates seamlessly with backend
+- JWT auth working across all protected routes
