@@ -1,7 +1,6 @@
 -- ============================================================
 -- Library Management System — Schema Migrations
--- Safe to run on both fresh DBs and existing ones.
--- Spring runs this on every startup (spring.sql.init.mode=always)
+
 -- ============================================================
 
 -- ── users upgrades ───────────────────────────────────────────

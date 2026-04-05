@@ -64,7 +64,6 @@ On first run, the database is auto-seeded with:
 | `admin` | `admin123` | ADMIN |
 | `librarian` | `lib123` | LIBRARIAN |
 | `member` | `mem123` | MEMBER |
-| `priya` | `priya123` | MEMBER |
 
 ### 4. Run the frontend
 
@@ -80,10 +79,10 @@ All protected endpoints require: `Authorization: Bearer <JWT_TOKEN>`
 
 ### Auth
 
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| POST | `/auth/login` | Public | Login → returns JWT |
-| PUT | `/auth/change-password` | Any | Change own password |
+| Method |       Path              | Auth    |     Description     |
+|        |                         |         |                     |
+| POST   | `/auth/login`           | Public  | Login → returns JWT |
+| PUT    | `/auth/change-password` | Any     | Change own password |
 
 **Login request:**
 ```json
@@ -177,21 +176,21 @@ All protected endpoints require: `Authorization: Bearer <JWT_TOKEN>`
 
 ### Users (Admin) — `/api/users`
 
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| GET | `/users` | Admin | List all users |
-| GET | `/users/{id}` | Admin/Librarian | Get user |
-| PUT | `/users/{id}/role` | Admin | Change role |
-| PUT | `/users/{id}/status` | Admin | Activate/deactivate |
+| Method | Path                 | Auth             | Description         |
+|        |                      |                  |                     |
+| GET    | `/users`             | Admin            | List all users      |
+| GET    | `/users/{id}`        | Admin/Librarian  | Get user            |
+| PUT    | `/users/{id}/role`   | Admin            | Change role         |
+| PUT    | `/users/{id}/status` | Admin            | Activate/deactivate |
 
 ---
 
 ### Reports — `/api/reports`
 
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| GET | `/reports/overdue` | Admin/Librarian | Overdue loans JSON |
-| GET | `/reports/overdue/export/pdf` | Admin/Librarian | Download PDF report |
+| Method |        Path                   |       Auth      | Description        |
+|        |                               |                 |                    |
+| GET    | `/reports/overdue`            | Admin/Librarian | Overdue loans JSON |
+| GET    | `/reports/overdue/export/pdf` | Admin/Librarian | Download PDF report|
 
 ---
 
@@ -212,7 +211,7 @@ backend/
         │   │   └── WebConfig.java           (serves /uploads/**)
         │   ├── controller/
         │   │   ├── AuthController.java
-        │   │   ├── BookController.java       ← NEW
+        │   │   ├── BookController.java
         │   │   ├── BookSearchController.java
         │   │   ├── DashboardController.java
         │   │   ├── LoanController.java
@@ -220,7 +219,7 @@ backend/
         │   │   ├── NotificationController.java
         │   │   ├── OverdueReportController.java
         │   │   ├── ProfileController.java
-        │   │   └── UserController.java       ← NEW
+        │   │   └── UserController.java
         │   ├── dto/
         │   │   ├── ChangePasswordRequest.java
         │   │   ├── DashboardStats.java
@@ -235,7 +234,7 @@ backend/
         │   │   ├── Member.java
         │   │   ├── Notification.java
         │   │   ├── NotificationPreference.java
-        │   │   └── User.java                 ← FIXED (Lombok conflict)
+        │   │   └── User.java
         │   ├── repository/
         │   │   ├── BookRepository.java
         │   │   ├── LoanRepository.java
@@ -251,7 +250,7 @@ backend/
         │       ├── BookSearchService.java
         │       ├── DashboardService.java
         │       ├── EmailService.java
-        │       ├── LoanService.java          ← FIXED (null safety + expiry check)
+        │       ├── LoanService.java          
         │       ├── MemberService.java
         │       ├── NotificationScheduler.java
         │       ├── NotificationService.java
@@ -259,8 +258,8 @@ backend/
         │       ├── ProfileService.java
         │       └── SmsService.java
         └── resources/
-            ├── application.properties        ← UPDATED
-            └── schema.sql                    ← EXTENDED
+            ├── application.properties        
+            └── schema.sql                    
 ```
 
 ---
