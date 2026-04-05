@@ -1,258 +1,277 @@
-# 05 — Database Schema
-# Library Management System — Microsoft SQL Server
+# 05 - Database Schema
+# Library Management System - Current PostgreSQL Schema
 
 ---
 
-## 1. Database Setup
+## 1. Overview
 
-```sql
--- Run in SSMS
-CREATE DATABASE library_db;
-GO
-USE library_db;
-GO
-```
+This document reflects the current backend data model implemented in:
 
----
+- `backend/src/main/java/com/library/model`
+- `backend/src/main/resources/schema.sql`
+- `backend/src/main/resources/application.properties`
 
-## 2. Tables
-
-### 2.1 users
-Stores system user accounts (Admin, Librarian, Member).
-
-```sql
-CREATE TABLE users (
-    id          BIGINT IDENTITY(1,1) PRIMARY KEY,
-    username    NVARCHAR(50)  NOT NULL UNIQUE,
-    password    NVARCHAR(255) NOT NULL,          -- BCrypt hash
-    email       NVARCHAR(100) NOT NULL UNIQUE,
-    role        NVARCHAR(20)  NOT NULL DEFAULT 'MEMBER'
-                    CHECK (role IN ('ADMIN', 'LIBRARIAN', 'MEMBER')),
-    is_active   BIT           NOT NULL DEFAULT 1,
-    created_at  DATETIME2     NOT NULL DEFAULT GETDATE()
-);
-```
-
-### 2.2 books
-Catalog of all library books.
-
-```sql
-CREATE TABLE books (
-    id               BIGINT IDENTITY(1,1) PRIMARY KEY,
-    title            NVARCHAR(255) NOT NULL,
-    author           NVARCHAR(150) NOT NULL,
-    isbn             NVARCHAR(20)  NOT NULL UNIQUE,
-    category         NVARCHAR(100),
-    total_copies     INT           NOT NULL DEFAULT 1,
-    available_copies INT           NOT NULL DEFAULT 1,
-    published_year   INT,
-    description      NVARCHAR(MAX),
-    created_at       DATETIME2     NOT NULL DEFAULT GETDATE(),
-    updated_at       DATETIME2     NOT NULL DEFAULT GETDATE(),
-
-    CONSTRAINT chk_copies CHECK (available_copies >= 0),
-    CONSTRAINT chk_total CHECK (total_copies >= 1)
-);
-```
-
-### 2.3 members
-Library subscribers who can borrow books.
-
-```sql
-CREATE TABLE members (
-    id          BIGINT IDENTITY(1,1) PRIMARY KEY,
-    name        NVARCHAR(100) NOT NULL,
-    email       NVARCHAR(100) NOT NULL UNIQUE,
-    phone       NVARCHAR(15),
-    address     NVARCHAR(MAX),
-    status      NVARCHAR(10)  NOT NULL DEFAULT 'ACTIVE'
-                    CHECK (status IN ('ACTIVE', 'INACTIVE')),
-    joined_date DATE          NOT NULL DEFAULT CAST(GETDATE() AS DATE),
-    created_at  DATETIME2     NOT NULL DEFAULT GETDATE(),
-    updated_at  DATETIME2     NOT NULL DEFAULT GETDATE()
-);
-```
-
-### 2.4 loans
-Tracks all book issue and return transactions.
-
-```sql
-CREATE TABLE loans (
-    id           BIGINT IDENTITY(1,1) PRIMARY KEY,
-    book_id      BIGINT         NOT NULL,
-    member_id    BIGINT         NOT NULL,
-    issue_date   DATE           NOT NULL DEFAULT CAST(GETDATE() AS DATE),
-    due_date     DATE           NOT NULL,
-    return_date  DATE           NULL,
-    fine_amount  DECIMAL(10,2)  NOT NULL DEFAULT 0.00,
-    status       NVARCHAR(10)   NOT NULL DEFAULT 'ACTIVE'
-                     CHECK (status IN ('ACTIVE', 'RETURNED', 'OVERDUE')),
-    created_at   DATETIME2      NOT NULL DEFAULT GETDATE(),
-
-    CONSTRAINT fk_loan_book   FOREIGN KEY (book_id)   REFERENCES books(id),
-    CONSTRAINT fk_loan_member FOREIGN KEY (member_id) REFERENCES members(id)
-);
-```
-
----
-
-## 3. Entity Relationship Diagram
-
-```
-┌──────────────┐           ┌──────────────┐
-│    members   │           │    books     │
-├──────────────┤           ├──────────────┤
-│ id (PK)      │           │ id (PK)      │
-│ name         │           │ title        │
-│ email        │           │ author       │
-│ phone        │           │ isbn         │
-│ address      │           │ category     │
-│ status       │           │ total_copies │
-│ joined_date  │           │ avail_copies │
-│ created_at   │           │ published_yr │
-└──────┬───────┘           └──────┬───────┘
-       │                          │
-       │  ┌───────────────────┐   │
-       └─►│       loans       │◄──┘
-          ├───────────────────┤
-          │ id (PK)           │
-          │ book_id   (FK)    │
-          │ member_id (FK)    │
-          │ issue_date        │
-          │ due_date          │
-          │ return_date       │
-          │ fine_amount       │
-          │ status            │
-          └───────────────────┘
-
-┌──────────────┐
-│    users     │  (independent — manages system login)
-├──────────────┤
-│ id (PK)      │
-│ username     │
-│ password     │
-│ email        │
-│ role         │
-│ is_active    │
-└──────────────┘
-```
-
----
-
-## 4. Indexes
-
-```sql
--- Speed up book searches
-CREATE INDEX idx_books_title  ON books(title);
-CREATE INDEX idx_books_author ON books(author);
-CREATE INDEX idx_books_isbn   ON books(isbn);
-
--- Speed up member lookups
-CREATE INDEX idx_members_email ON members(email);
-CREATE INDEX idx_members_name  ON members(name);
-
--- Speed up loan queries
-CREATE INDEX idx_loans_status    ON loans(status);
-CREATE INDEX idx_loans_member_id ON loans(member_id);
-CREATE INDEX idx_loans_book_id   ON loans(book_id);
-CREATE INDEX idx_loans_due_date  ON loans(due_date);
-```
-
----
-
-## 5. Seed Data (Initial Setup)
-
-```sql
--- Default Admin Account (password: admin123)
-INSERT INTO users (username, password, email, role)
-VALUES (
-    'admin',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', -- BCrypt of 'admin123'
-    'admin@library.com',
-    'ADMIN'
-);
-
--- Sample Books
-INSERT INTO books (title, author, isbn, category, total_copies, available_copies, published_year)
-VALUES
-    ('Clean Code', 'Robert C. Martin', '9780132350884', 'Technology', 3, 3, 2008),
-    ('The Pragmatic Programmer', 'Andrew Hunt', '9780201616224', 'Technology', 2, 2, 1999),
-    ('Design Patterns', 'Gang of Four', '9780201633610', 'Technology', 2, 2, 1994),
-    ('Atomic Habits', 'James Clear', '9780735211292', 'Self-Help', 4, 4, 2018),
-    ('To Kill a Mockingbird', 'Harper Lee', '9780061935466', 'Fiction', 3, 3, 1960);
-
--- Sample Members
-INSERT INTO members (name, email, phone, status, joined_date)
-VALUES
-    ('Arjun Kumar', 'arjun@email.com', '9876543210', 'ACTIVE', '2026-01-15'),
-    ('Priya Sharma', 'priya@email.com', '9876543211', 'ACTIVE', '2026-02-10'),
-    ('Rahul Verma', 'rahul@email.com', '9876543212', 'ACTIVE', '2026-03-01');
-```
-
----
-
-## 6. Useful Queries
-
-```sql
--- View all active loans with book and member details
-SELECT
-    l.id,
-    b.title AS book_title,
-    m.name  AS member_name,
-    l.issue_date,
-    l.due_date,
-    l.status,
-    l.fine_amount
-FROM loans l
-JOIN books   b ON l.book_id   = b.id
-JOIN members m ON l.member_id = m.id
-WHERE l.status = 'ACTIVE';
-
--- Find all overdue loans
-SELECT
-    l.id,
-    b.title,
-    m.name,
-    l.due_date,
-    DATEDIFF(DAY, l.due_date, GETDATE()) AS days_overdue,
-    DATEDIFF(DAY, l.due_date, GETDATE()) * 5.00 AS fine_amount
-FROM loans l
-JOIN books   b ON l.book_id   = b.id
-JOIN members m ON l.member_id = m.id
-WHERE l.status = 'ACTIVE'
-  AND l.due_date < CAST(GETDATE() AS DATE);
-
--- Dashboard stats
-SELECT
-    (SELECT COUNT(*) FROM books)                          AS total_books,
-    (SELECT COUNT(*) FROM members WHERE status='ACTIVE') AS total_members,
-    (SELECT COUNT(*) FROM loans WHERE status='ACTIVE')   AS active_loans,
-    (SELECT COUNT(*) FROM loans
-     WHERE status='ACTIVE'
-       AND due_date < CAST(GETDATE() AS DATE))           AS overdue_loans;
-```
-
----
-
-## 7. Spring Boot SSMS Configuration
+The application currently uses PostgreSQL with Hibernate auto-update enabled:
 
 ```properties
-# application.properties
-spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=library_db;encrypt=true;trustServerCertificate=true
-spring.datasource.username=sa
-spring.datasource.password=your_password
-spring.datasource.driver-class-name=com.microsoft.sqlserver.jdbc.SQLServerDriver
-
+spring.datasource.url=jdbc:postgresql://localhost:5432/librarydb
 spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.SQLServerDialect
+spring.sql.init.mode=always
 ```
 
-```xml
-<!-- pom.xml dependency -->
-<dependency>
-    <groupId>com.microsoft.sqlserver</groupId>
-    <artifactId>mssql-jdbc</artifactId>
-    <scope>runtime</scope>
-</dependency>
+---
+
+## 2. Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    BOOKS {
+        BIGINT id PK
+        VARCHAR title
+        VARCHAR author
+        VARCHAR isbn UK
+        VARCHAR category
+        INTEGER published_year
+        INTEGER total_copies
+        INTEGER available_copies
+        VARCHAR description
+    }
+
+    MEMBERS {
+        BIGINT id PK
+        VARCHAR name
+        VARCHAR email UK
+        VARCHAR phone
+        VARCHAR address
+        DATE joined_date
+        DATE expiry_date
+        VARCHAR status
+    }
+
+    LOANS {
+        BIGINT id PK
+        BIGINT book_id FK
+        BIGINT member_id FK
+        DATE issue_date
+        DATE due_date
+        DATE return_date
+        DECIMAL fine_amount
+        BOOLEAN fine_paid
+        TIMESTAMP fine_paid_at
+        BOOLEAN fine_waived
+        TIMESTAMP fine_waived_at
+        VARCHAR fine_waived_reason
+        VARCHAR status
+    }
+
+    USERS {
+        BIGINT id PK
+        VARCHAR username UK
+        VARCHAR password
+        VARCHAR email UK
+        VARCHAR full_name
+        VARCHAR phone
+        VARCHAR role
+        VARCHAR profile_picture
+        BOOLEAN active
+        BIGINT member_id
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    NOTIFICATIONS {
+        BIGINT id PK
+        BIGINT user_id FK
+        VARCHAR type
+        VARCHAR title
+        TEXT message
+        VARCHAR delivery_method
+        VARCHAR status
+        BIGINT reference_id
+        VARCHAR reference_type
+        TIMESTAMP scheduled_at
+        TIMESTAMP sent_at
+        TIMESTAMP read_at
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    NOTIFICATION_PREFERENCES {
+        BIGINT id PK
+        BIGINT user_id FK UK
+        BOOLEAN due_date_reminder_enabled
+        INTEGER due_date_reminder_days_before
+        BOOLEAN fine_alert_enabled
+        BOOLEAN new_book_arrival_enabled
+        VARCHAR preferred_categories
+        BOOLEAN delivery_method_in_app
+        BOOLEAN delivery_method_email
+        BOOLEAN delivery_method_sms
+        VARCHAR notification_frequency
+        TIME quiet_hours_start
+        TIME quiet_hours_end
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    BOOKS ||--o{ LOANS : book_id
+    MEMBERS ||--o{ LOANS : member_id
+    USERS ||--o{ NOTIFICATIONS : user_id
+    USERS ||--|| NOTIFICATION_PREFERENCES : user_id
 ```
+
+---
+
+## 3. Tables
+
+### 3.1 `books`
+
+Stores the catalog of books available in the library.
+
+| Column | Type | Constraints / Notes |
+|---|---|---|
+| `id` | `BIGINT` | Primary key, identity |
+| `title` | `VARCHAR(200)` | Not null |
+| `author` | `VARCHAR(150)` | Not null |
+| `isbn` | `VARCHAR(20)` | Not null, unique |
+| `category` | `VARCHAR(100)` | Nullable |
+| `published_year` | `INTEGER` | Nullable |
+| `total_copies` | `INTEGER` | Not null, default `1` |
+| `available_copies` | `INTEGER` | Not null, default `1` |
+| `description` | `VARCHAR(500)` | Nullable |
+
+### 3.2 `members`
+
+Represents library members who borrow books.
+
+| Column | Type | Constraints / Notes |
+|---|---|---|
+| `id` | `BIGINT` | Primary key, identity |
+| `name` | `VARCHAR(100)` | Not null |
+| `email` | `VARCHAR(150)` | Not null, unique |
+| `phone` | `VARCHAR(20)` | Nullable |
+| `address` | `VARCHAR(300)` | Nullable |
+| `joined_date` | `DATE` | Not null, defaults to current date in application |
+| `expiry_date` | `DATE` | Nullable, auto-derived from `joined_date` when absent |
+| `status` | `VARCHAR(20)` | Not null, default `ACTIVE` |
+
+### 3.3 `loans`
+
+Tracks issue, due, return, and fine state for each borrowed book.
+
+| Column | Type | Constraints / Notes |
+|---|---|---|
+| `id` | `BIGINT` | Primary key, identity |
+| `book_id` | `BIGINT` | Not null, many-to-one to `books.id` |
+| `member_id` | `BIGINT` | Not null, many-to-one to `members.id` |
+| `issue_date` | `DATE` | Not null, defaults to current date in application |
+| `due_date` | `DATE` | Not null |
+| `return_date` | `DATE` | Nullable |
+| `fine_amount` | `DECIMAL(10,2)` | Default `0.00` |
+| `fine_paid` | `BOOLEAN` | Not null, default `false` |
+| `fine_paid_at` | `TIMESTAMP` | Nullable |
+| `fine_waived` | `BOOLEAN` | Not null, default `false` |
+| `fine_waived_at` | `TIMESTAMP` | Nullable |
+| `fine_waived_reason` | `VARCHAR(300)` | Nullable |
+| `status` | `VARCHAR(20)` | Not null, enum: `ACTIVE`, `RETURNED`, `OVERDUE` |
+
+### 3.4 `users`
+
+Stores application login accounts for admins, librarians, and member users.
+
+| Column | Type | Constraints / Notes |
+|---|---|---|
+| `id` | `BIGINT` | Primary key, identity |
+| `username` | `VARCHAR(50)` | Not null, unique |
+| `password` | `VARCHAR` | Not null |
+| `email` | `VARCHAR(150)` | Nullable, unique when present |
+| `full_name` | `VARCHAR(100)` | Nullable |
+| `phone` | `VARCHAR(20)` | Nullable |
+| `role` | `VARCHAR(20)` | Not null, enum: `ADMIN`, `LIBRARIAN`, `MEMBER` |
+| `profile_picture` | `VARCHAR(500)` | Nullable |
+| `active` | `BOOLEAN` | Not null, default `true` |
+| `member_id` | `BIGINT` | Plain column used to link a member user to a member record; not mapped as a JPA relationship |
+| `created_at` | `TIMESTAMP` | Not null |
+| `updated_at` | `TIMESTAMP` | Not null |
+
+### 3.5 `notifications`
+
+Stores scheduled and delivered notifications for users.
+
+| Column | Type | Constraints / Notes |
+|---|---|---|
+| `id` | `BIGINT` | Primary key, identity |
+| `user_id` | `BIGINT` | Not null, many-to-one to `users.id` |
+| `type` | `VARCHAR(50)` | Not null, enum: `DUE_DATE_REMINDER`, `FINE_ALERT`, `NEW_BOOK_ARRIVAL` |
+| `title` | `VARCHAR(200)` | Not null |
+| `message` | `TEXT` | Not null |
+| `delivery_method` | `VARCHAR(20)` | Not null, enum: `IN_APP`, `EMAIL`, `SMS` |
+| `status` | `VARCHAR(20)` | Not null, enum: `PENDING`, `SENT`, `FAILED`, `READ` |
+| `reference_id` | `BIGINT` | Nullable |
+| `reference_type` | `VARCHAR(50)` | Nullable |
+| `scheduled_at` | `TIMESTAMP` | Not null |
+| `sent_at` | `TIMESTAMP` | Nullable |
+| `read_at` | `TIMESTAMP` | Nullable |
+| `created_at` | `TIMESTAMP` | Not null |
+| `updated_at` | `TIMESTAMP` | Not null |
+
+### 3.6 `notification_preferences`
+
+Stores one notification preference record per user.
+
+| Column | Type | Constraints / Notes |
+|---|---|---|
+| `id` | `BIGINT` | Primary key, identity |
+| `user_id` | `BIGINT` | Not null, unique, one-to-one with `users.id` |
+| `due_date_reminder_enabled` | `BOOLEAN` | Not null, default `true` |
+| `due_date_reminder_days_before` | `INTEGER` | Not null, default `3` |
+| `fine_alert_enabled` | `BOOLEAN` | Not null, default `true` |
+| `new_book_arrival_enabled` | `BOOLEAN` | Not null, default `true` |
+| `preferred_categories` | `VARCHAR(500)` | Nullable |
+| `delivery_method_in_app` | `BOOLEAN` | Not null, default `true` |
+| `delivery_method_email` | `BOOLEAN` | Not null, default `true` |
+| `delivery_method_sms` | `BOOLEAN` | Not null, default `false` |
+| `notification_frequency` | `VARCHAR(20)` | Not null, enum: `IMMEDIATE`, `DAILY`, `WEEKLY` |
+| `quiet_hours_start` | `TIME` | Nullable |
+| `quiet_hours_end` | `TIME` | Nullable |
+| `created_at` | `TIMESTAMP` | Not null |
+| `updated_at` | `TIMESTAMP` | Not null |
+
+---
+
+## 4. Relationship Notes
+
+- One `book` can appear in many `loans`.
+- One `member` can have many `loans`.
+- One `user` can have many `notifications`.
+- One `user` has one `notification_preferences` record.
+- `users.member_id` is intentionally a scalar field today, not a foreign-key-backed entity association in JPA.
+
+---
+
+## 5. Seed Data Snapshot
+
+The current seeder creates:
+
+- 2 staff users: `admin`, `librarian`
+- 5 members
+- 2 member-linked user accounts: `member`, `priya`
+- 10 sample books
+
+Seeder source:
+
+- `backend/src/main/java/com/library/config/DataSeeder.java`
+
+---
+
+## 6. Source of Truth
+
+If this document and the code ever differ, treat these files as the source of truth:
+
+- `backend/src/main/java/com/library/model/Book.java`
+- `backend/src/main/java/com/library/model/Member.java`
+- `backend/src/main/java/com/library/model/Loan.java`
+- `backend/src/main/java/com/library/model/User.java`
+- `backend/src/main/java/com/library/model/Notification.java`
+- `backend/src/main/java/com/library/model/NotificationPreference.java`
+- `backend/src/main/resources/schema.sql`

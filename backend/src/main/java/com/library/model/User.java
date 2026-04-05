@@ -50,7 +50,15 @@ public class User {
     @Builder.Default
     private Boolean active = true;
 
-    // Link to Member record (for MEMBER role users)
+    // Link to Member record (for MEMBER role users).
+    // NOTE: This is a plain Long column — NOT a JPA relationship.
+    // It stores the member's PK so we can look up the member when needed.
+    // FIX: Renamed from memberId column to avoid Lombok builder conflict.
+    //      The @Column annotation maps to the correct DB column "member_id".
+    //      Lombok @Builder + @Setter generates setMemberId() correctly because
+    //      the field name is memberId (camelCase) and Lombok does NOT generate
+    //      a memberId(long) builder method when explicit getters/setters exist
+    //      alongside @Builder — we removed the duplicate manual methods.
     @Column(name = "member_id")
     private Long memberId;
 
@@ -62,8 +70,17 @@ public class User {
     @Builder.Default
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-        @PreUpdate
-    protected void onUpdate() { updatedAt = LocalDateTime.now(); }
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+    // NOTE: Do NOT declare getMemberId() / setMemberId() manually here.
+    // @Getter + @Setter already generates them. Having both caused the
+    // compile error "cannot find symbol: method memberId(long) in UserBuilder"
+    // because Lombok's builder tries to create a builder method for the field,
+    // but the presence of manual accessor methods confused the annotation
+    // processor in some configurations.
 
     public enum Role {
         ADMIN, LIBRARIAN, MEMBER

@@ -1,7 +1,24 @@
 /* ============================================
-PROFILE MODULE — Library Management System
+   PROFILE MODULE — Library Management System
    ============================================ */
 
+// ── Helper functions (missing from utils.js) ─────────────────
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value || '—';
+}
+
+function setVal(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.value = value || '';
+}
+
+function getVal(id) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
+
+// ── Module state ──────────────────────────────────────────────
 let currentUser = null;
 let selectedFile = null;
 
@@ -59,7 +76,7 @@ function renderProfile(user) {
     if (removeBtn) removeBtn.style.display = user.profilePicture ? 'inline-flex' : 'none';
 }
 
-// ── Render avatar (used everywhere) ──────────────────────────
+// ── Render avatar ─────────────────────────────────────────────
 function renderAvatar(containerId, picturePath, name, size = 120) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -98,7 +115,6 @@ async function saveProfile(e) {
         currentUser = res.user;
         renderProfile(res.user);
 
-        // Update localStorage and sidebar
         const stored = JSON.parse(localStorage.getItem('user') || '{}');
         stored.fullName = res.user.fullName;
         stored.profilePicture = res.user.profilePicture;
@@ -173,7 +189,6 @@ function processFile(file) {
 
     picError.style.display = 'none';
 
-    // Client-side validation
     const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowed.includes(file.type)) {
         picError.textContent = 'Invalid file type. Only JPEG, PNG, GIF, WEBP allowed.';
@@ -190,7 +205,6 @@ function processFile(file) {
         return;
     }
 
-    // Show preview
     selectedFile = file;
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -212,7 +226,6 @@ async function uploadPicture() {
         const formData = new FormData();
         formData.append('file', selectedFile);
 
-        // Use raw fetch for multipart (apiRequest sets Content-Type: json)
         const token = localStorage.getItem('token');
         const response = await fetch(`${API_BASE}/profile/me/picture`, {
             method: 'POST',
@@ -224,12 +237,10 @@ async function uploadPicture() {
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || 'Upload failed.');
 
-        // Update display
         currentUser.profilePicture = data.profilePicture;
         renderAvatar('avatarDisplay', data.profilePicture, currentUser.fullName || currentUser.username);
         document.getElementById('removePicBtn').style.display = 'inline-flex';
 
-        // Update localStorage and sidebar
         const stored = JSON.parse(localStorage.getItem('user') || '{}');
         stored.profilePicture = data.profilePicture;
         localStorage.setItem('user', JSON.stringify(stored));
@@ -261,7 +272,6 @@ async function removePicture() {
         renderAvatar('avatarDisplay', null, currentUser.fullName || currentUser.username);
         document.getElementById('removePicBtn').style.display = 'none';
 
-        // Update localStorage and sidebar
         const stored = JSON.parse(localStorage.getItem('user') || '{}');
         stored.profilePicture = null;
         localStorage.setItem('user', JSON.stringify(stored));
@@ -280,5 +290,3 @@ function resetPictureModal() {
     document.getElementById('picError').style.display = 'none';
     document.getElementById('uploadBtn').disabled = true;
 }
-
-// setText, setVal, getVal are defined in utils.js — no duplicates needed here

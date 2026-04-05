@@ -1,10 +1,9 @@
 /* ============================================
-   API WRAPPER — Library Management System
-   Base fetch wrapper with JWT auth headers
+  API WRAPPER — Library Management System
+  Base fetch wrapper with JWT auth headers
    ============================================ */
 
-const API_BASE = `http://${window.location.hostname}:8099/api`;
-
+const API_BASE = `http://localhost:8099/api`;
 async function apiRequest(endpoint, options = {}) {
   const token = localStorage.getItem('token');
   const url = `${API_BASE}${endpoint}`;

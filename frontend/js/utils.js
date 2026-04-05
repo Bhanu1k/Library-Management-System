@@ -197,10 +197,23 @@ function formatTimeAgo(dateStr) {
   return `${Math.floor(s / 86400)}d ago`;
 }
 
+function getBackendBaseUrl() {
+  return API_BASE.replace('/api', '');
+}
+
+function getProfileImageUrl(path) {
+  if (!path) return '';
+  const separator = path.includes('?') ? '&' : '?';
+  return `${getBackendBaseUrl()}${path}${separator}_t=${Date.now()}`;
+}
+
 // ── Build Sidebar ──
 function buildSidebar(activePage) {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const role = (user.role || 'MEMBER').toUpperCase();
+  
+  console.log('[buildSidebar] user from localStorage:', user);
+  console.log('[buildSidebar] profilePicture:', user.profilePicture);
 
   const navItems = [];
 
@@ -249,7 +262,9 @@ function buildSidebar(activePage) {
       </nav>
       <div class="sidebar-footer">
                   <div class="sidebar-user">
-          <div class="user-avatar">${user.profilePicture ? `<img src="${user.profilePicture}?_t=${Date.now()}" alt="${escapeHtml(user.username)}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<div class=\\'user-avatar\\'>${getInitials(user.username || 'U')}</div>');this.parentElement.querySelector('div').style.display='flex';" />` : getInitials(user.username || 'U')}</div>
+          <div class="user-avatar">${user.profilePicture
+            ? `<img src="${getProfileImageUrl(user.profilePicture)}" alt="${escapeHtml(user.username)}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" /><div class="user-avatar" style="display:none;">${getInitials(user.username || 'U')}</div>`
+            : getInitials(user.username || 'U')}</div>
                   <div class="user-info">
           <div class="user-name">${escapeHtml(user.username || 'User')}</div>
           <div class="user-role">${role}</div>
@@ -277,9 +292,11 @@ function validateProfileImage() {
     console.warn('[Profile] Image failed to load, clearing stale path');
     user.profilePicture = null;
     localStorage.setItem('user', JSON.stringify(user));
-    buildSidebar('profile');
+    const active = document.querySelector('.sidebar .nav-item.active');
+    const href = active?.getAttribute('href') || 'profile.html';
+    buildSidebar(href.replace('.html', '').toLowerCase());
   };
-  img.src = `${user.profilePicture}?_t=${Date.now()}`;
+  img.src = getProfileImageUrl(user.profilePicture);
 }
 
 // ── Global Notification Bell ──
@@ -462,3 +479,7 @@ function isAdmin() { return getUserRole() === 'ADMIN'; }
 function isLibrarian() { return getUserRole() === 'LIBRARIAN'; }
 function isMember() { return getUserRole() === 'MEMBER'; }
 function canManage() { return isAdmin() || isLibrarian(); }
+// ── DOM Helpers ──
+function setText(id, val) { const el = document.getElementById(id); if (el) el.textContent = (val !== undefined && val !== null) ? val : '—'; }
+function setVal(id, val)  { const el = document.getElementById(id); if (el) el.value = val || ''; }
+function getVal(id)       { return document.getElementById(id)?.value?.trim() || ''; }

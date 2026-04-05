@@ -1,0 +1,27 @@
+# Build
+backend/target/
+backend/*.zip
+frontend/*.zip
+src.zip
+
+# IDE
+.vscode/
+.idea/
+backend/.settings/
+backend/.project
+backend/.classpath
+backend/.factorypath
+
+# Environment
+.env
+*.env.local
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Runtime data
+backend/uploads/
