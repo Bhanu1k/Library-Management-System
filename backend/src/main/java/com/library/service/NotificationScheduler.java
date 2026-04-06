@@ -4,7 +4,6 @@ import com.library.model.Loan;
 import com.library.model.Member;
 import com.library.model.User;
 import com.library.repository.LoanRepository;
-import com.library.repository.MemberRepository;
 import com.library.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +21,6 @@ public class NotificationScheduler {
 
     private final NotificationService notificationService;
     private final LoanRepository loanRepository;
-    private final MemberRepository memberRepository;
     private final UserRepository userRepository;
 
     /**

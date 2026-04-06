@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,8 +38,10 @@ public class ProfileService {
     }
 
     public User getUserById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        return Objects.requireNonNull(
+                userRepository.findById(id)
+                        .orElseThrow(() -> new RuntimeException("User not found with id: " + id)),
+                "Resolved user must not be null");
     }
 
     // ── Update profile ────────────────────────────────────────
@@ -53,7 +56,9 @@ public class ProfileService {
         if (body.containsKey("phone"))
             user.setPhone(body.get("phone"));
 
-        return userRepository.save(user);
+        return Objects.requireNonNull(
+                userRepository.save(user),
+                "User repository returned null while updating profile");
     }
 
     // ── Upload profile picture ────────────────────────────────

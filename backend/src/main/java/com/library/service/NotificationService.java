@@ -15,8 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +29,6 @@ public class NotificationService {
     private final UserRepository userRepository;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    private static final int MAX_RETRY_ATTEMPTS = 3;
 
     /**
      * Create a new notification
@@ -51,7 +49,9 @@ public class NotificationService {
                 .scheduledAt(LocalDateTime.now())
                 .build();
 
-        return notificationRepository.save(notification);
+        return Objects.requireNonNull(
+                notificationRepository.save(notification),
+                "Notification repository returned null while saving a notification");
     }
 
     /**
@@ -116,7 +116,6 @@ public class NotificationService {
      * Send SMS notification
      */
     private boolean sendSmsNotification(Notification notification) {
-        User user = notification.getUser();
         // Note: In a real implementation, you'd fetch the member's phone from the user's linked member profile
         // For now, we'll use a placeholder
         String phoneNumber = "+1234567890"; // Placeholder
@@ -152,14 +151,19 @@ public class NotificationService {
     public Notification markAsRead(Long notificationId, Long userId) {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
+        Long ownerUserId = Objects.requireNonNull(
+                Objects.requireNonNull(notification.getUser(), "Notification user is required").getId(),
+                "Notification user id is required");
 
-        if (!notification.getUser().getId().equals(userId)) {
+        if (!ownerUserId.equals(userId)) {
             throw new RuntimeException("Unauthorized access to notification");
         }
 
         notification.setStatus(NotificationStatus.READ);
         notification.setReadAt(LocalDateTime.now());
-        return notificationRepository.save(notification);
+        return Objects.requireNonNull(
+                notificationRepository.save(notification),
+                "Notification repository returned null while updating a notification");
     }
 
     /**
@@ -175,7 +179,9 @@ public class NotificationService {
             notification.setReadAt(now);
         }
         
-        notificationRepository.saveAll(unreadNotifications);
+        Objects.requireNonNull(
+                notificationRepository.saveAll(unreadNotifications),
+                "Notification repository returned null while saving notifications");
     }
 
     /**
@@ -206,7 +212,9 @@ public class NotificationService {
                 .notificationFrequency(NotificationPreference.NotificationFrequency.IMMEDIATE)
                 .build();
 
-        return preferenceRepository.save(preference);
+        return Objects.requireNonNull(
+                preferenceRepository.save(preference),
+                "Preference repository returned null while saving notification preferences");
     }
 
     /**
@@ -228,7 +236,9 @@ public class NotificationService {
         existing.setQuietHoursStart(updatedPreferences.getQuietHoursStart());
         existing.setQuietHoursEnd(updatedPreferences.getQuietHoursEnd());
 
-        return preferenceRepository.save(existing);
+        return Objects.requireNonNull(
+                preferenceRepository.save(existing),
+                "Preference repository returned null while updating notification preferences");
     }
 
     /**
@@ -238,7 +248,7 @@ public class NotificationService {
     public void sendDueDateReminder(User user, Loan loan, int daysRemaining) {
         NotificationPreference preferences = getUserPreferences(user.getId());
         
-        if (!preferences.getDueDateReminderEnabled()) {
+        if (!Boolean.TRUE.equals(preferences.getDueDateReminderEnabled())) {
             log.debug("Due date reminder disabled for user: {}", user.getUsername());
             return;
         }
@@ -252,18 +262,18 @@ public class NotificationService {
         );
 
         // Send via each enabled delivery method
-        if (preferences.getDeliveryMethodInApp()) {
+        if (Boolean.TRUE.equals(preferences.getDeliveryMethodInApp())) {
             createNotification(user, NotificationType.DUE_DATE_REMINDER, title, message,
                     DeliveryMethod.IN_APP, loan.getId(), "LOAN");
         }
 
-        if (preferences.getDeliveryMethodEmail()) {
+        if (Boolean.TRUE.equals(preferences.getDeliveryMethodEmail())) {
             Notification notification = createNotification(user, NotificationType.DUE_DATE_REMINDER, title, message,
                     DeliveryMethod.EMAIL, loan.getId(), "LOAN");
             sendNotification(notification);
         }
 
-        if (preferences.getDeliveryMethodSms()) {
+        if (Boolean.TRUE.equals(preferences.getDeliveryMethodSms())) {
             Notification notification = createNotification(user, NotificationType.DUE_DATE_REMINDER, title, message,
                     DeliveryMethod.SMS, loan.getId(), "LOAN");
             sendNotification(notification);
@@ -277,7 +287,7 @@ public class NotificationService {
     public void sendFineAlert(User user, Loan loan, int daysOverdue, double fineAmount) {
         NotificationPreference preferences = getUserPreferences(user.getId());
         
-        if (!preferences.getFineAlertEnabled()) {
+        if (!Boolean.TRUE.equals(preferences.getFineAlertEnabled())) {
             log.debug("Fine alert disabled for user: {}", user.getUsername());
             return;
         }
@@ -291,18 +301,18 @@ public class NotificationService {
         );
 
         // Send via each enabled delivery method
-        if (preferences.getDeliveryMethodInApp()) {
+        if (Boolean.TRUE.equals(preferences.getDeliveryMethodInApp())) {
             createNotification(user, NotificationType.FINE_ALERT, title, message,
                     DeliveryMethod.IN_APP, loan.getId(), "LOAN");
         }
 
-        if (preferences.getDeliveryMethodEmail()) {
+        if (Boolean.TRUE.equals(preferences.getDeliveryMethodEmail())) {
             Notification notification = createNotification(user, NotificationType.FINE_ALERT, title, message,
                     DeliveryMethod.EMAIL, loan.getId(), "LOAN");
             sendNotification(notification);
         }
 
-        if (preferences.getDeliveryMethodSms()) {
+        if (Boolean.TRUE.equals(preferences.getDeliveryMethodSms())) {
             Notification notification = createNotification(user, NotificationType.FINE_ALERT, title, message,
                     DeliveryMethod.SMS, loan.getId(), "LOAN");
             sendNotification(notification);
@@ -316,7 +326,7 @@ public class NotificationService {
     public void sendNewBookArrival(User user, Book book) {
         NotificationPreference preferences = getUserPreferences(user.getId());
         
-        if (!preferences.getNewBookArrivalEnabled()) {
+        if (!Boolean.TRUE.equals(preferences.getNewBookArrivalEnabled())) {
             log.debug("New book arrival notification disabled for user: {}", user.getUsername());
             return;
         }
@@ -350,18 +360,18 @@ public class NotificationService {
         );
 
         // Send via each enabled delivery method
-        if (preferences.getDeliveryMethodInApp()) {
+        if (Boolean.TRUE.equals(preferences.getDeliveryMethodInApp())) {
             createNotification(user, NotificationType.NEW_BOOK_ARRIVAL, title, message,
                     DeliveryMethod.IN_APP, book.getId(), "BOOK");
         }
 
-        if (preferences.getDeliveryMethodEmail()) {
+        if (Boolean.TRUE.equals(preferences.getDeliveryMethodEmail())) {
             Notification notification = createNotification(user, NotificationType.NEW_BOOK_ARRIVAL, title, message,
                     DeliveryMethod.EMAIL, book.getId(), "BOOK");
             sendNotification(notification);
         }
 
-        if (preferences.getDeliveryMethodSms()) {
+        if (Boolean.TRUE.equals(preferences.getDeliveryMethodSms())) {
             Notification notification = createNotification(user, NotificationType.NEW_BOOK_ARRIVAL, title, message,
                     DeliveryMethod.SMS, book.getId(), "BOOK");
             sendNotification(notification);
