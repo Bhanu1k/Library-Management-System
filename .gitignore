@@ -1,5 +1,8 @@
 # Build
 backend/target/
+frontend/node_modules/
+frontend/dist/
+frontend/build/
 backend/*.zip
 frontend/*.zip
 src.zip
@@ -14,14 +17,20 @@ backend/.factorypath
 
 # Environment
 .env
+.env.*
+!.env.example
 *.env.local
 
 # Logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # OS
 .DS_Store
 Thumbs.db
 
 # Runtime data
+.runtime/
 backend/uploads/
