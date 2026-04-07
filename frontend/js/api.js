@@ -3,7 +3,7 @@
   Base fetch wrapper with JWT auth headers
    ============================================ */
 
-const API_BASE = `http://localhost:8099/api`;
+const API_BASE = `https://library-management-system-backend-3l4e.onrender.com/api`;
 async function apiRequest(endpoint, options = {}) {
   const token = localStorage.getItem('token');
   const url = `${API_BASE}${endpoint}`;
