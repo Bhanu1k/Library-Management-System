@@ -1,4 +1,4 @@
-const API_BASE = `https://library-management-system-backend-3l4e.onrender.com/api`;
+const API_BASE = `https://library-management-system-backend-3l4e.onrender.com`;
 async function apiRequest(endpoint, options = {}) {
   const token = localStorage.getItem('token');
   const url = `${API_BASE}${endpoint}`;
