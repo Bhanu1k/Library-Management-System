@@ -3,7 +3,7 @@
 **Version**: 1.0  
 **Date**: March 2026  
 
----
+
 
 ## 1. System Overview
 
@@ -13,11 +13,11 @@ The Library Management System is a monolithic full-stack web application with:
 - **Database**: MySQL RDBMS
 - **Auth**: JWT-based stateless authentication
 
----
+
 
 ## 2. High-Level Design (HLD)
 
-```
+
 ┌──────────────────────────────────────────────────────────────┐
 │                        CLIENT BROWSER                         │
 │                  HTML + CSS + JavaScript                      │
@@ -51,15 +51,12 @@ The Library Management System is a monolithic full-stack web application with:
 │                      MySQL Database                           │
 │         users | books | members | loans                       │
 └──────────────────────────────────────────────────────────────┘
-```
 
----
 
 ## 3. Low-Level Design (LLD)
 
 ### 3.1 Entity Relationship Diagram (ERD)
 
-```
 ┌───────────────┐          ┌───────────────┐
 │    members    │          │     books      │
 ├───────────────┤          ├───────────────┤
@@ -96,7 +93,7 @@ The Library Management System is a monolithic full-stack web application with:
 │ role          │   ADMIN | LIBRARIAN | MEMBER
 │ created_at    │
 └───────────────┘
-```
+
 
 ### 3.2 Class Design — Backend
 
@@ -192,9 +189,7 @@ public Loan returnBook(Long loanId) {
     bookRepo.save(book);
     return loanRepo.save(loan);
 }
-```
 
----
 
 ## 4. API Design
 
