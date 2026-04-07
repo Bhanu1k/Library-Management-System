@@ -1,8 +1,3 @@
-/* ============================================
-  API WRAPPER — Library Management System
-  Base fetch wrapper with JWT auth headers
-   ============================================ */
-
 const API_BASE = `https://library-management-system-backend-3l4e.onrender.com/api`;
 async function apiRequest(endpoint, options = {}) {
   const token = localStorage.getItem('token');
