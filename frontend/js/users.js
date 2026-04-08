@@ -138,9 +138,9 @@ function renderUserAvatar(user, size = 36) {
         return `<img class="user-avatar" style="width:${size}px;height:${size}px;"
       src="${API_BASE.replace('/api', '')}${user.profilePicture}"
       alt="${escapeHtml(name)}"
-      onerror="this.outerHTML='<div class=\\'user-avatar-initials\\' style=\\'width:${size}px;height:${size}px;\\'>${getInitials(name)}</div>'" />`;
+      onerror="this.outerHTML='<div class=\\'user-avatar-initials\\' style=\\'width:${size}px;height:${size}px;\\'></div>'" />`;
     }
-    return `<div class="user-avatar-initials" style="width:${size}px;height:${size}px;">${getInitials(name)}</div>`;
+    return `<div class="user-avatar-initials" style="width:${size}px;height:${size}px;"></div>`;
 }
 
 // ── View user detail modal ────────────────────────────────────
@@ -154,9 +154,9 @@ async function viewUser(id) {
         if (user.profilePicture) {
             avatarContainer.innerHTML = `<img style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--border-color,#e8ecf0);"
         src="${API_BASE.replace('/api', '')}${user.profilePicture}" alt="${escapeHtml(name)}"
-        onerror="this.outerHTML='<div style=\\'width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#1e3a5f,#2d5f9e);color:#fff;font-size:1.5rem;font-weight:700;display:flex;align-items:center;justify-content:center;\\'>${getInitials(name)}</div>'" />`;
+        onerror="this.outerHTML='<div style=\\'width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#1e3a5f,#2d5f9e);display:flex;align-items:center;justify-content:center;\\'></div>'" />`;
         } else {
-            avatarContainer.innerHTML = `<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#1e3a5f,#2d5f9e);color:#fff;font-size:1.5rem;font-weight:700;display:flex;align-items:center;justify-content:center;">${getInitials(name)}</div>`;
+            avatarContainer.innerHTML = `<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#1e3a5f,#2d5f9e);display:flex;align-items:center;justify-content:center;"></div>`;
         }
 
         document.getElementById('detailName').textContent = name;

@@ -263,8 +263,8 @@ function buildSidebar(activePage) {
       <div class="sidebar-footer">
                   <div class="sidebar-user">
           <div class="user-avatar">${user.profilePicture
-            ? `<img src="${getProfileImageUrl(user.profilePicture)}" alt="${escapeHtml(user.username)}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" /><div class="user-avatar" style="display:none;">${getInitials(user.username || 'U')}</div>`
-            : getInitials(user.username || 'U')}</div>
+            ? `<img src="${getProfileImageUrl(user.profilePicture)}" alt="${escapeHtml(user.username)}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" /><div class="user-avatar" style="display:none;"></div>`
+            : ''}</div>
                   <div class="user-info">
           <div class="user-name">${escapeHtml(user.username || 'User')}</div>
           <div class="user-role">${role}</div>

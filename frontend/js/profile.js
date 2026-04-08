@@ -87,14 +87,10 @@ function renderAvatar(containerId, picturePath, name, size = 120) {
       <img class="avatar-img" src="${API_BASE.replace('/api', '')}${picturePath}${separator}_t=${Date.now()}"
         alt="${escapeHtml(name)}" style="width:${size}px;height:${size}px;"
         onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
-      <div class="avatar-initials" style="width:${size}px;height:${size}px;display:none;font-size:${size / 3.5}rem;">
-        ${getInitials(name)}
-      </div>`;
+      <div class="avatar-initials" style="width:${size}px;height:${size}px;display:none;font-size:${size / 3.5}rem;"></div>`;
     } else {
         container.innerHTML = `
-      <div class="avatar-initials" style="width:${size}px;height:${size}px;font-size:${size / 3.5}rem;">
-        ${getInitials(name)}
-      </div>`;
+      <div class="avatar-initials" style="width:${size}px;height:${size}px;font-size:${size / 3.5}rem;"></div>`;
     }
 }
 
