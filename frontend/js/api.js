@@ -1,4 +1,21 @@
-const API_BASE = `https://library-management-system-backend-3l4e.onrender.com/api`;
+const DEFAULT_REMOTE_API_ORIGIN = 'https://library-management-system-backend-3l4e.onrender.com';
+
+function resolveApiBase() {
+  const configuredOrigin = (window.LIBRARY_API_ORIGIN || DEFAULT_REMOTE_API_ORIGIN).replace(/\/+$/, '');
+  const isLocalHost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+
+  if (isLocalHost) {
+    return 'http://localhost:8099/api';
+  }
+
+  const safeOrigin = window.location.protocol === 'https:'
+    ? configuredOrigin.replace(/^http:/i, 'https:')
+    : configuredOrigin;
+
+  return `${safeOrigin}/api`;
+}
+
+const API_BASE = resolveApiBase();
 async function apiRequest(endpoint, options = {}) {
   const token = localStorage.getItem('token');
   const url = `${API_BASE}${endpoint}`;
