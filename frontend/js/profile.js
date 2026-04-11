@@ -82,15 +82,14 @@ function renderAvatar(containerId, picturePath, name, size = 120) {
     if (!container) return;
 
     if (picturePath) {
-        const separator = picturePath.includes('?') ? '&' : '?';
         container.innerHTML = `
-      <img class="avatar-img" src="${API_BASE.replace('/api', '')}${picturePath}${separator}_t=${Date.now()}"
+      <img class="avatar-img" src="${getProfileImageUrl(picturePath)}"
         alt="${escapeHtml(name)}" style="width:${size}px;height:${size}px;"
         onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
-      <div class="avatar-initials" style="width:${size}px;height:${size}px;display:none;font-size:${size / 3.5}rem;"></div>`;
+      <div class="avatar-initials" style="width:${size}px;height:${size}px;display:none;font-size:${size / 3.5}rem;">${escapeHtml(getInitials(name))}</div>`;
     } else {
         container.innerHTML = `
-      <div class="avatar-initials" style="width:${size}px;height:${size}px;font-size:${size / 3.5}rem;"></div>`;
+      <div class="avatar-initials" style="width:${size}px;height:${size}px;font-size:${size / 3.5}rem;">${escapeHtml(getInitials(name))}</div>`;
     }
 }
 
@@ -234,6 +233,7 @@ async function uploadPicture() {
         if (!response.ok) throw new Error(data.message || 'Upload failed.');
 
         currentUser.profilePicture = data.profilePicture;
+        setProfilePictureVersion();
         renderAvatar('avatarDisplay', data.profilePicture, currentUser.fullName || currentUser.username);
         document.getElementById('removePicBtn').style.display = 'inline-flex';
 
@@ -265,6 +265,7 @@ async function removePicture() {
     try {
         await apiDelete('/profile/me/picture');
         currentUser.profilePicture = null;
+        setProfilePictureVersion();
         renderAvatar('avatarDisplay', null, currentUser.fullName || currentUser.username);
         document.getElementById('removePicBtn').style.display = 'none';
 

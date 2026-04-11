@@ -201,10 +201,18 @@ function getBackendBaseUrl() {
   return API_BASE.replace('/api', '');
 }
 
+function getProfilePictureVersion() {
+  return localStorage.getItem('profilePictureVersion') || '1';
+}
+
+function setProfilePictureVersion(version = Date.now().toString()) {
+  localStorage.setItem('profilePictureVersion', version);
+}
+
 function getProfileImageUrl(path) {
   if (!path) return '';
   const separator = path.includes('?') ? '&' : '?';
-  return `${getBackendBaseUrl()}${path}${separator}_t=${Date.now()}`;
+  return `${getBackendBaseUrl()}${path}${separator}_v=${getProfilePictureVersion()}`;
 }
 
 // ── Build Sidebar ──
@@ -355,8 +363,12 @@ function injectGlobalBell() {
       </div>
     </div>`);
 
-  // Load bell notifications
-  loadBellNotifications();
+  // Load just the unread count after first paint; fetch the full list only when opened.
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(() => loadBellUnreadCount(), { timeout: 2000 });
+  } else {
+    setTimeout(loadBellUnreadCount, 300);
+  }
 
   // Close bell dropdown on outside click
   document.addEventListener('click', (e) => {
@@ -365,6 +377,20 @@ function injectGlobalBell() {
       if (d) d.style.display = 'none';
     }
   });
+}
+
+async function loadBellUnreadCount() {
+  try {
+    const data = await apiGet('/notifications/unread-count');
+    const unreadCount = data.count || 0;
+    const badge = document.getElementById('notifBadge');
+    if (!badge) return;
+
+    badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+    badge.style.display = unreadCount > 0 ? 'flex' : 'none';
+  } catch (_) {
+    // Keep the bell quiet if the backend is unavailable.
+  }
 }
 
 async function loadBellNotifications() {
@@ -465,7 +491,6 @@ function initMobileSidebar() {
 document.addEventListener('DOMContentLoaded', () => {
   const isLoginPage = !document.querySelector('.sidebar');
   if (!isLoginPage && requireAuth()) {
-    validateProfileImage();
     startBellPolling();
   }
 });

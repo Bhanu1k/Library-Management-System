@@ -32,23 +32,13 @@ async function handleLogin(e) {
   try {
     const data = await apiPost('/auth/login', { username, password });
 
-    // Store token and user info
+    // Store the minimal session data we already have so we can redirect immediately.
     localStorage.setItem('token', data.token);
-
-    // Fetch full profile to get profilePicture
-    let profilePic = null;
-    let fullName = null;
-    try {
-      const profile = await apiGet('/profile/me');
-      profilePic = profile.profilePicture || null;
-      fullName = profile.fullName || null;
-    } catch (_) { /* profile fetch failed, continue without picture */ }
-
     localStorage.setItem('user', JSON.stringify({
       username: data.username,
       role: data.role,
-      profilePicture: profilePic,
-      fullName: fullName,
+      profilePicture: null,
+      fullName: null,
     }));
 
     // Redirect based on role
